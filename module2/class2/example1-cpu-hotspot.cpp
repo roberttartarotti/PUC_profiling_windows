@@ -6,7 +6,7 @@
 
 // FUNÇÃO EXTREMAMENTE INTENSIVA DE CPU - PROBLEMA CRÍTICO DE PERFORMANCE
 // Esta função foi projetada para ser um PESADELO de performance
-// ATENÇÃO: Esta função consumirá 100% do CPU por vários minutos!
+// ATENÇÃO: Esta função consumirá 100% do CPU por vários minutos!git st
 double calcularSomaVetorIntensiva(const std::vector<double>& vetor) {
     double soma = 0.0;
     

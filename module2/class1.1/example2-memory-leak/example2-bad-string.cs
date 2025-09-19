@@ -3,6 +3,13 @@
  * Este código será utilizado nas aulas de profiling de performance na PUC Campinas.
  * 
  * NOTA: Este código é fornecido apenas para fins de demonstração. Ele propositalmente contém problemas de performance para auxiliar na demonstração do profiling de performance.
+ * 
+ * Portions of this code are based on work by Mitchel Sellers
+ * Original repository: https://github.com/mitchelsellers/memorydiagnosisexample
+ * Licensed under MIT License
+ * 
+ * MIT License
+ * Copyright (c) 2025 Mitchel Sellers
  */
 
 using System.Text;
