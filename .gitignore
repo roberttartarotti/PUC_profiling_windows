@@ -42,3 +42,9 @@
 
 # macOS system files
 .DS_Store
+
+.vscode/
+.idea/
+.vs/
+.vscode/
+.vscode/                                                                

@@ -34,7 +34,7 @@ using namespace std::chrono;
 
 // Array Configuration
 const int ARRAY_SIZE = 5000;              // Array size for profiling (5000 = shows O(n²) complexity)
-const int TEST_ITERATIONS = 3;            // Number of test iterations
+const int TEST_ITERATIONS = 1;            // Number of test iterations
 const int RANDOM_SEED = 42;               // Random seed for reproducible results
 
 // Performance Tracking
