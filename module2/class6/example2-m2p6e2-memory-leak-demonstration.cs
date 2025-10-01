@@ -79,6 +79,7 @@ namespace MemoryLeakDemonstration
         private Timer _timer;
         private List<byte[]> _dataBuffers;
         private int _processorId;
+        _dataBuffers = new List<byte[]>();
 
         // Constructor that allocates significant amounts of resources
         public MegaResourceProcessor(int id, int size = Config.MEGA_ARRAY_SIZE)

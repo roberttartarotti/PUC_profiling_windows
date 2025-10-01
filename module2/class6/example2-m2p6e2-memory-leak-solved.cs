@@ -80,6 +80,7 @@ namespace ProperResourceDisposal
         public MegaResourceProcessor(int id, int size = Config.MEGA_ARRAY_SIZE)
         {
             _processorId = id;
+            _dataBuffers = new List<byte[]>();
             Console.WriteLine($"  [CONSTRUCTOR] Processor {id} allocating resources with proper disposal...");
 
             // Create file stream (PROPERLY MANAGED - will be disposed)
