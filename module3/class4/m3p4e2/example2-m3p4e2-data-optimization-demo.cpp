@@ -55,8 +55,7 @@
 // =====================================================================================
 
 // Optimization modes: 0=no optimization, 1=deduplication, 2=binary format, 3=compression, 4=all
-// CHANGE THIS LINE TO DEMONSTRATE DIFFERENT MODES IN YOUR CLASS:
-int OPTIMIZATION_MODE = 0;  // Set to 0-4 to test different optimization levels
+int OPTIMIZATION_MODE = 4;  // Set to 0-4 to test different optimization levels
 
 const int SERVER_PORT = 8888;
 const int BUFFER_SIZE = 65536;  // 64KB buffer

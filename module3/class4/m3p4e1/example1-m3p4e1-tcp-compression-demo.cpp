@@ -53,8 +53,7 @@
  // =====================================================================================
 
  // Toggle compression mode: true = with compression, false = without compression
- // CHANGE THIS LINE TO DEMONSTRATE BOTH MODES IN YOUR CLASS:
-bool USE_COMPRESSION = false;  // Set to true for compression demo, false for baseline
+bool USE_COMPRESSION = true;  // Set to true for compression demo, false for baseline
 
 const int SERVER_PORT = 8888;
 const std::string IMAGE_PATH = "C:\\Users\\robert\\personal\\PUC_profiling_windows\\module3\\class4\\m3p4e1\\image3.bmp";
