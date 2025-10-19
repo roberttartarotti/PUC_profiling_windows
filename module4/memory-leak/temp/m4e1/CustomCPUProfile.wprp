@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WindowsPerformanceRecorder Version="1.0" Author="PUC">
+  <Profiles>
+    
+    <!-- 
+    =====================================================================================
+    CUSTOM CPU PROFILE WITH ETW INSTRUMENTATION
+    =====================================================================================
+    
+    This profile extends the built-in CPU profile to include custom ETW providers.
+    
+    Based on Microsoft's recommendation from:
+    https://learn.microsoft.com/en-us/windows-hardware/test/weg/instrumenting-your-code-with-etw
+    
+    The built-in CPU profile already includes:
+    - Kernel CPU sampling (SampledProfile)
+    - Process/Thread tracking (ProcessThread)  
+    - Module loading (Loader)
+    - .NET CLR events for managed stack traces
+    
+    We extend it by adding our custom provider: MyEventProvider
+    
+    USAGE:
+    1. wpr -start CustomCPUProfile.wprp!CustomCPU -filemode
+    2. Run your instrumented program
+    3. wpr -stop trace.etl
+    4. wpa trace.etl
+    
+    =====================================================================================
+    -->
+    
+    <EventCollector Id="EventCollector_CustomETW" Name="Custom ETW Events">
+      <BufferSize Value="256"/>
+      <Buffers Value="64"/>
+    </EventCollector>
+
+    <!-- Custom provider: MyEventProvider -->
+    <EventProvider Id="EventProvider_MyApp" 
+                   Name="3877cf22-0702-4dfc-965e-7fdc7780cd74"
+                   Level="5"/>
+
+    <!-- Profile that inherits from built-in CPU profile -->
+    <Profile Id="CustomCPU.Light.File" 
+             Base="CPU.Light.File" 
+             LoggingMode="File" 
+             Name="CustomCPU" 
+             DetailLevel="Light" 
+             Description="CPU profiling with custom ETW events">
+      <Collectors>
+        <EventCollectorId Value="EventCollector_CustomETW">
+          <EventProviders>
+            <EventProviderId Value="EventProvider_MyApp"/>
+          </EventProviders>
+        </EventCollectorId>
+      </Collectors>
+    </Profile>
+
+    <Profile Id="CustomCPU.Light.Memory" 
+             Base="CPU.Light.Memory" 
+             LoggingMode="Memory" 
+             Name="CustomCPU" 
+             DetailLevel="Light" 
+             Description="CPU profiling with custom ETW events"/>
+
+    <Profile Id="CustomCPU.Verbose.File" 
+             Base="CPU.Verbose.File" 
+             LoggingMode="File" 
+             Name="CustomCPU" 
+             DetailLevel="Verbose" 
+             Description="CPU profiling with custom ETW events - detailed">
+      <Collectors>
+        <EventCollectorId Value="EventCollector_CustomETW">
+          <EventProviders>
+            <EventProviderId Value="EventProvider_MyApp"/>
+          </EventProviders>
+        </EventCollectorId>
+      </Collectors>
+    </Profile>
+
+    <Profile Id="CustomCPU.Verbose.Memory" 
+             Base="CPU.Verbose.Memory" 
+             LoggingMode="Memory" 
+             Name="CustomCPU" 
+             DetailLevel="Verbose" 
+             Description="CPU profiling with custom ETW events - detailed"/>
+
+  </Profiles>
+</WindowsPerformanceRecorder>
