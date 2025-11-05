@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WindowsPerformanceRecorder Version="1.0" Author="PUC">
+  <Profiles>
+    <Profile Id="BusyWaitProfile.Verbose.File" 
+             Base="CPU.Verbose.File"
+             LoggingMode="File" 
+             Name="BusyWaitProfile" 
+             DetailLevel="Verbose" 
+             Description="CPU profiling with busy wait loop events" />
+  </Profiles>
+</WindowsPerformanceRecorder>

@@ -1,0 +1,6 @@
+@WebAPIImport_HostAddress = http://localhost:5027
+
+GET {{WebAPIImport_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
