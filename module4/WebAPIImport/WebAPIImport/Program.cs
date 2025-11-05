@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 using WebAPIImport.DAO;
 using Microsoft.EntityFrameworkCore;
 using WebAPIImport.DAO.Interface;

@@ -7,9 +7,8 @@ namespace WebAPIImport
     {
         public static readonly WebAPIImportApp Log = new WebAPIImportApp();
 
-
-        [Event(1, Level = EventLevel.Informational, Message = "Busy wait web server start")]
-        public void ProcessingStarted() => WriteEvent(1);
+        [Event(1000, Level = EventLevel.Informational, Message = "Web server start")]
+        public void ProcessingStarted() => WriteEvent(1000);
 
         [Event(1200, Level = EventLevel.Informational, Message = "Request message send {0}")]
         public void ExecuteMethod(string metod) => WriteEvent(1200, metod);

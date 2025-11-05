@@ -65,6 +65,14 @@ namespace WebAPIImport.DAO
             Logger.LogInformation($"Saving RecordData with id {item.id}");
             try
             {
+                Random random = new Random();
+                int d20 = random.Next(1, 20);
+
+                if(d20 == 1)
+                {
+                    throw new Exception("Critcal Error");
+                }
+
                 item.CreateAt = DateTime.UtcNow;
 
                 if (item.id == new Guid())

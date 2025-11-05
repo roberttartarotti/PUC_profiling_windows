@@ -58,6 +58,7 @@ namespace WebAPIImport.API.Controllers
             }
             catch (Exception ex)
             {
+                WebAPIImportApp.Log.ErrorMethod("POST");
                 Logger.LogError(500, ex, "Error creating RecordData");
                 return StatusCode(500, "Internal Server Error");
             }
