@@ -1,0 +1,31 @@
+﻿<Page
+    x:Class="Importador.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Importador"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="49*"/>
+            <ColumnDefinition Width="401*"/>
+            <ColumnDefinition Width="50*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="130*"/>
+            <RowDefinition Height="112*"/>
+            <RowDefinition Height="55*"/>
+            <RowDefinition Height="703*"/>
+        </Grid.RowDefinitions>
+        <TextBlock HorizontalAlignment="Center" TextWrapping="Wrap" Text="Importador" VerticalAlignment="Center" FontSize="72" Grid.Column="1" Height="96" Width="362"/>
+        <TextBlock Grid.Row="1" TextWrapping="Wrap" Text="Arquivo:" TextAlignment="Right" FontSize="20" VerticalAlignment="Center"/>
+        <TextBox x:Name="txtArquivo" Grid.Row="1" TextWrapping="Wrap" Text="data01.csv" VerticalAlignment="Center" Grid.Column="1" Margin="40,0,40,0" FontSize="20"/>
+        <Button x:Name="btnArquivo" Content="Importar" Grid.Row="1" Grid.Column="2" HorizontalAlignment="Stretch" FontSize="20" Click="btnArquivo_Click"/>
+        <ProgressBar x:Name="prbStatus" Grid.Column="1" Grid.Row="2" VerticalAlignment="Stretch"/>
+        <GridView x:Name="gridData" Grid.Column="1" Grid.Row="3"/>
+
+    </Grid>
+</Page>
