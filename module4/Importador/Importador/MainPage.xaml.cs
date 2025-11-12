@@ -31,13 +31,13 @@ namespace Importador
         {
             this.InitializeComponent();
             Contas = new ContasLogic();
-            MyData = new ObservableCollection<Models.DataIn>();
+            MyData = new ObservableCollection<ContaControl>();
             gridData.ItemsSource = MyData; // Assuming MyDataGrid is the name of your DataGrid
         }
 
         public Logic.ContasLogic Contas = new Logic.ContasLogic();
 
-        public ObservableCollection<Models.DataIn> MyData { get; set; }
+        public ObservableCollection<ContaControl> MyData { get; set; }
 
         private async void ProcessLine(string linha, string fileName, Guid lineCode)
         {
@@ -46,7 +46,17 @@ namespace Importador
             try
             {
                 // Adiciona os dados ao gridData
-                MyData.Add(Contas.addOperacaoLine(fileName, linha, lineCode));
+                var data = Contas.addOperacaoLine(fileName, linha, lineCode);
+
+                ContaControl contaControl = MyData.Where(c => c.NumConta == data.Conta).FirstOrDefault();
+                if (contaControl == null)
+                {
+                    contaControl = new ContaControl(data.Conta);
+                    MyData.Add(contaControl);
+                }
+
+                contaControl.Saldo = Contas.Contas.Where(x => x.ID == data.Conta).First().Saldo;
+                contaControl.Events = Contas.Contas.Where(x => x.ID == data.Conta).First().Operacoes.Count;
 
                 prbStatus.Value++;
             }
