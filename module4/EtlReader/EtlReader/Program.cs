@@ -81,6 +81,8 @@ public class Program
         return bytesList.ToArray();
     }
 
+    public static List<EventFile> events = new List<EventFile>();
+
     public static void ReadEtlFile(string etlFilePath)
     {
         using (var source = new ETWTraceEventSource(etlFilePath))
@@ -98,7 +100,80 @@ public class Program
                     else
                     {
                         var payload = readDictionaryPayload(data.Dump());
-                        Console.WriteLine(manifest.getMessageById(data.ProviderGuid, (int)data.ID, payload));
+
+                        switch ((int)data.ID) {
+                            case 12:
+                                EventFile @event = events.Where(x => x.fileName == payload["fileName"].ToString()).FirstOrDefault();
+                                if (@event == null)
+                                {
+                                    @event = new EventFile(payload["fileName"].ToString(), data.TimeStamp);
+                                    events.Add(@event);
+                                }
+                                break;
+                            case 13:
+                                @event = events.Where(x => x.fileName == payload["fileName"].ToString()).FirstOrDefault();
+                                if (@event != null)
+                                {
+                                    var line = @event.lines.Where(x => x.idLine == new Guid(payload["lineCode"].ToString())).FirstOrDefault();
+                                    if (line == null)
+                                    {
+                                        line = new EventImport();
+                                        line.idLine = new Guid(payload["lineCode"].ToString());
+                                        line.lineText = payload["line"].ToString();
+                                        line.ProcessLine = data.TimeStamp;
+
+                                        @event.lines.Add(line);
+                                    }
+                                }
+                                break;
+                            case 14:
+                                @event = events.Where(x => x.fileName == payload["fileName"].ToString()).FirstOrDefault();
+                                if (@event != null)
+                                {
+                                    var line = @event.lines.Where(x => x.idLine == new Guid(payload["lineCode"].ToString())).FirstOrDefault();
+                                    if (line != null)
+                                    {
+                                        line.ProcessData = data.TimeStamp;
+                                        line.conta = int.Parse(payload["conta"].ToString());
+                                        line.value = decimal.Parse(payload["valor"].ToString());
+                                        line.descricao = payload["descricao"].ToString();
+                                    }
+                                }
+                                break;
+
+                            case 21:
+                                @event = events.Where(x => x.fileName == payload["fileName"].ToString()).FirstOrDefault();
+                                if (@event != null)
+                                {
+                                    @event.errorProcess = data.TimeStamp;
+                                }
+                                break;
+                            case 22:
+                                @event = events.Where(x => x.fileName == payload["fileName"].ToString()).FirstOrDefault();
+                                if (@event != null)
+                                {
+                                    var line = @event.lines.Where(x => x.idLine == new Guid(payload["lineCode"].ToString())).FirstOrDefault();
+                                    if (line != null)
+                                    {
+                                        line.ErrorLine = data.TimeStamp;
+                                    }
+                                }
+                                break;
+                            case 23:
+                                @event = events.Where(x => x.fileName == payload["fileName"].ToString()).FirstOrDefault();
+                                if (@event != null)
+                                {
+                                    var line = @event.lines.Where(x => x.idLine == new Guid(payload["lineCode"].ToString())).FirstOrDefault();
+                                    if (line != null)
+                                    {
+                                        line.ErrorData = data.TimeStamp;
+                                    }
+                                }
+                                break;
+                        
+                        }
+
+
                     }
                 }
                 // You can access more specific data based on the event type
@@ -108,6 +183,42 @@ public class Program
             // Process the events in the ETL file
             source.Process();
         }
+
+        foreach (var e in events)
+        {
+            Console.WriteLine("Inicio do processo do arquivo - " + e.fileName);
+            Console.WriteLine("-" + e.startProcess.ToString("dd/MM/yyyy HH:mm:ss"));
+            foreach (var line in e.lines.Where(x=>x.ErrorLine != null).ToList())
+            {
+                Console.WriteLine("---------------------------------------------------------------");
+                Console.WriteLine("-Linha - " + line.lineText);
+                Console.WriteLine("--" + line.ProcessLine.ToString("dd/MM/yyyy HH:mm:ss"));
+                if (line.ErrorLine != null)
+                {
+                    Console.WriteLine($"--Error Linha - {line.ErrorLine.Value.ToString("dd/MM/yyyy HH:mm:ss")}");
+                }
+                else
+                {
+                    Console.WriteLine("--" + line.ProcessData.ToString("dd/MM/yyyy HH:mm:ss"));
+                    if (line.ErrorData != null)
+                    {
+                        Console.WriteLine($"--Error Data - {line.ErrorData.Value.ToString("dd/MM/yyyy HH:mm:ss")}");
+                    }
+                    else
+                    {
+                        Console.WriteLine("--Conta :" + line.conta.ToString());
+                        Console.WriteLine("--Valor :" + line.value.ToString());
+                        Console.WriteLine("--Descricao :" + line.descricao);
+                    }
+                }
+                Console.WriteLine("---------------------------------------------------------------");
+            }
+            if (e.errorProcess != null)
+            {
+                Console.WriteLine($"-Error - {e.errorProcess.Value.ToString("dd/MM/yyyy HH:mm:ss")}");
+            }
+        }
+
         Console.WriteLine("Finished processing ETL file.");
     }
 

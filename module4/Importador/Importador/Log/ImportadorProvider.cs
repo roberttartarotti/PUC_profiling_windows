@@ -23,89 +23,37 @@ namespace Importador.Log
         [Event(12, Level = EventLevel.Informational, Message = "Importando arquivo {0}")]
         public void ProcessFile(string fileName)
         {
-            string json = JsonConvert.SerializeObject(new
-            {
-                fileName = fileName
-            });
-
-            byte[] bytes = Encoding.ASCII.GetBytes(json);
-
-            WriteEvent(12, bytes);
+            WriteEvent(12, fileName);
         }
 
         [Event(13, Level = EventLevel.Informational, Message = "Processando linha {1}")]
         public void ProcessLine(string fileName, string line, string lineCode)
         {
-            string json = JsonConvert.SerializeObject( new
-            {
-                fileName = fileName,
-                line = line,
-                lineCode = lineCode
-            });
-
-            byte[] bytes = Encoding.ASCII.GetBytes(json);
-
-            WriteEvent(13, bytes);
+            WriteEvent(13, fileName, line, lineCode);
         }
 
         [Event(14, Level = EventLevel.Informational, Message = "Processando dados da conta {2}, valor {3} - {4}")]
         public void ProcessData(string fileName, string lineCode, int conta, string valor, string descricao)
         {
-            string json = JsonConvert.SerializeObject(new
-            {
-                fileName = fileName,
-                lineCode = lineCode,
-                conta = conta,
-                valor = valor,
-                descricao = descricao
-            });
-
-            byte[] bytes = Encoding.ASCII.GetBytes(json);
-
-            WriteEvent(14, bytes);
+            WriteEvent(14, fileName, lineCode, conta, valor, descricao);
         }
 
         [Event(21, Level = EventLevel.Error, Message = "Erro ao processar o Arquivo {0}")]
         public void ErrorProcess(string fileName)
         {
-            string json = JsonConvert.SerializeObject(new
-            {
-                fileName = fileName
-            });
-
-            byte[] bytes = Encoding.ASCII.GetBytes(json);
-
-            WriteEvent(21, bytes);
+            WriteEvent(21, fileName);
         }
 
         [Event(22, Level = EventLevel.Error, Message = "Erro ao processar a Linha {1}")]
         public void ErrorLine(string fileName, string line, string lineCode)
         {
-            string json = JsonConvert.SerializeObject(new
-            {
-                fileName = fileName,
-                line = line,
-                lineCode = lineCode
-            });
-
-            byte[] bytes = Encoding.ASCII.GetBytes(json);
-
-            WriteEvent(22, bytes);
+            WriteEvent(22, fileName, line, lineCode);
         }
 
         [Event(23, Level = EventLevel.Error, Message = "Erro ao processar a Conta {2}")]
         public void ErrorProcessConta(string fileName, string lineCode, int conta)
         {
-            string json = JsonConvert.SerializeObject(new
-            {
-                fileName = fileName,
-                lineCode = lineCode,
-                conta = conta
-            });
-
-            byte[] bytes = Encoding.ASCII.GetBytes(json);
-
-            WriteEvent(23, bytes);
+            WriteEvent(23, fileName, lineCode, conta);
         }
 
     }

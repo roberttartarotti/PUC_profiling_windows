@@ -11,5 +11,12 @@ namespace Importador.Models
         public int ID { get; set; }
         public decimal Saldo { get; set; }
         public List<DataIn> Operacoes { get; set; }
+
+        public Conta(int id)
+        {
+            ID = id;
+            Saldo = 0;
+            Operacoes = new List<DataIn>(); 
+        }
     }
 }

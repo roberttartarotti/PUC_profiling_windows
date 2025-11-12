@@ -17,6 +17,8 @@ using System.Threading.Tasks;
 using System.Collections.ObjectModel;
 using Importador.Logic;
 using Importador.Models;
+using Importador.Manager;
+using Windows.Networking.NetworkOperators;
 
 // O modelo de item de Página em Branco está documentado em https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x416
 
@@ -30,41 +32,24 @@ namespace Importador
         public MainPage()
         {
             this.InitializeComponent();
-            Contas = new ContasLogic();
-            MyData = new ObservableCollection<ContaControl>();
-            gridData.ItemsSource = MyData; // Assuming MyDataGrid is the name of your DataGrid
+            contasManager = new ContasManager();
+
+            contasManager.contaUIHandler = UpdateContaUI;
+            contasManager.maxProgressHandler = UpdateMaxProgress;
+
+            gridData.ItemsSource = contasManager.ContasControl; // Assuming MyDataGrid is the name of your DataGrid
         }
 
-        public Logic.ContasLogic Contas = new Logic.ContasLogic();
+        private ContasManager contasManager;
 
-        public ObservableCollection<ContaControl> MyData { get; set; }
-
-        private async void ProcessLine(string linha, string fileName, Guid lineCode)
+        private async Task UpdateMaxProgress(int value)
         {
-            Log.ImportadorProvider.Log.ProcessLine(fileName, linha, lineCode.ToString());
+            prbStatus.Maximum = value;
+        }
 
-            try
-            {
-                // Adiciona os dados ao gridData
-                var data = Contas.addOperacaoLine(fileName, linha, lineCode);
-
-                ContaControl contaControl = MyData.Where(c => c.NumConta == data.Conta).FirstOrDefault();
-                if (contaControl == null)
-                {
-                    contaControl = new ContaControl(data.Conta);
-                    MyData.Add(contaControl);
-                }
-
-                contaControl.Saldo = Contas.Contas.Where(x => x.ID == data.Conta).First().Saldo;
-                contaControl.Events = Contas.Contas.Where(x => x.ID == data.Conta).First().Operacoes.Count;
-
-                prbStatus.Value++;
-            }
-            catch (Exception ex)
-            {
-                Log.ImportadorProvider.Log.ErrorLine(fileName, linha, lineCode.ToString());
-                throw new Exception($"Erro ao processar a linha {linha}");
-            }
+        private async Task UpdateContaUI(Conta conta)
+        {
+            prbStatus.Value += 1;
         }
 
         private async void btnArquivo_Click(object sender, RoutedEventArgs e)
@@ -85,42 +70,10 @@ namespace Importador
                 return;
             }
 
-            try
-            {
-                Log.ImportadorProvider.Log.ProcessFile(arquivoSelecionado.Path);
-                txtArquivo.Text = arquivoSelecionado.Path;
-                // Lê o conteúdo do arquivo CSV
-                var conteudo = await FileIO.ReadTextAsync(arquivoSelecionado);
-                var linhas = conteudo.Split("\r\n");
+            txtArquivo.Text = arquivoSelecionado.Path;
+            prbStatus.Value = 0;
 
-                prbStatus.Maximum = linhas.Length - 1;
-
-                bool primeiro = true;
-
-                // Processa cada linha do CSV
-                foreach (var linha in linhas)
-                {
-                    if ((!primeiro) && (!string.IsNullOrWhiteSpace(linha)))
-                        ProcessLine(linha, arquivoSelecionado.Path, Guid.NewGuid());
-                    else
-                    {
-                        primeiro = false;
-                    }
-                    // Fazer algo com os valores
-                }
-            }
-            catch (Exception ex)
-            {
-                Log.ImportadorProvider.Log.ErrorProcess(arquivoSelecionado.Path);
-                // Tratar erros de leitura
-                ContentDialog dialog = new ContentDialog
-                {
-                    Title = "Erro",
-                    Content = $"Erro ao importar o arquivo CSV: {ex.Message}",
-                    CloseButtonText = "OK"
-                };
-                await dialog.ShowAsync();
-            }
+            contasManager.ImportCSV(arquivoSelecionado);
 
             Log.ImportadorProvider.Log.CompletedImport();
         }
