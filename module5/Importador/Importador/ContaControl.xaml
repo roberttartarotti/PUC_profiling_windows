@@ -20,10 +20,10 @@
                 <RowDefinition Height="60*" />
                 <RowDefinition Height="40*"  />
             </Grid.RowDefinitions>
-            <TextBlock Grid.Row="0" x:Name="name" Text="Conta 000" TextAlignment="Left" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" />
-            <TextBlock Grid.Row="1" x:Name="saldo" Text="000" TextAlignment="Left" VerticalAlignment="Center" />
+            <TextBlock Grid.Row="0" x:Name="txtName" Text="Conta 000" TextAlignment="Left" VerticalAlignment="Center" FontSize="16" FontWeight="Bold" />
+            <TextBlock Grid.Row="1" x:Name="txtSaldo" Text="000" TextAlignment="Left" VerticalAlignment="Center" />
         </Grid>
-        <TextBlock Grid.Column="1" x:Name="numberEvents" Text="000" TextAlignment="Center" VerticalAlignment="Center" />
+        <TextBlock Grid.Column="1" x:Name="txtNumberEvents" Text="000" TextAlignment="Center" VerticalAlignment="Center" />
         <Button Grid.Column="2" Content="Detalhes" HorizontalAlignment="Stretch" />
 
     </Grid>

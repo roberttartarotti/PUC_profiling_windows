@@ -19,6 +19,8 @@ using Importador.Logic;
 using Importador.Models;
 using Importador.Manager;
 using Windows.Networking.NetworkOperators;
+using Windows.ApplicationModel.Core;
+using Windows.UI.Core;
 
 // O modelo de item de Página em Branco está documentado em https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x416
 
@@ -34,22 +36,49 @@ namespace Importador
             this.InitializeComponent();
             contasManager = new ContasManager();
 
-            contasManager.contaUIHandler = UpdateContaUI;
+            contasManager.progressHandler = UpdateProgress;
             contasManager.maxProgressHandler = UpdateMaxProgress;
+
+            contasManager.fileProgressHandler = UpdateFileProgress;
+            contasManager.maxFileProgressHandler = UpdateFileMaxProgress;
 
             gridData.ItemsSource = contasManager.ContasControl; // Assuming MyDataGrid is the name of your DataGrid
         }
 
         private ContasManager contasManager;
 
-        private async Task UpdateMaxProgress(int value)
+        private async Task UpdateMaxProgress(double value)
         {
-            prbStatus.Maximum = value;
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                prbStatus.Maximum = value;
+            });
         }
 
-        private async Task UpdateContaUI(Conta conta)
+        private async Task UpdateProgress(double value)
         {
-            prbStatus.Value += 1;
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                prbStatus.Value += value;
+            });
+        }
+
+        private async Task UpdateFileMaxProgress(double value)
+        {
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                prbStatusFile.Maximum = value;
+                txtFileStatus.Text = $"Importando {prbStatusFile.Value} bytes de {prbStatusFile.Maximum} bytes";
+            });
+        }
+
+        private async Task UpdateFileProgress(double value)
+        {
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                prbStatusFile.Value += value;
+                txtFileStatus.Text = $"Importando {prbStatusFile.Value} bytes de {prbStatusFile.Maximum} bytes";
+            });
         }
 
         private async void btnArquivo_Click(object sender, RoutedEventArgs e)
@@ -73,7 +102,10 @@ namespace Importador
             txtArquivo.Text = arquivoSelecionado.Path;
             prbStatus.Value = 0;
 
-            await contasManager.ImportCSV(arquivoSelecionado);
+            await Task.Run(async () =>
+            {
+                await contasManager.ImportCSV(arquivoSelecionado);
+            });
 
             Log.ImportadorProvider.Log.CompletedImport();
         }

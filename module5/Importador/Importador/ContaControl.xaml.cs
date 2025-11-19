@@ -26,7 +26,7 @@ namespace Importador
 
         public int Events { set
             {
-                numberEvents.Text = value.ToString();
+                txtNumberEvents.Text = value.ToString();
             }
         }
 
@@ -34,7 +34,7 @@ namespace Importador
         {
             set
             {
-                saldo.Text = "R$ " + value.ToString("0.00");
+                txtSaldo.Text = "R$ " + value.ToString("0.00");
             }
         }
 
@@ -42,8 +42,8 @@ namespace Importador
         {
             this.InitializeComponent();
             NumConta = numConta;
-            name.Text = $"Conta {numConta}";
-            saldo.Text = "R$ 0.00";
+            txtName.Text = $"Conta {numConta}";
+            txtSaldo.Text = "R$ 0.00";
         }
 
         

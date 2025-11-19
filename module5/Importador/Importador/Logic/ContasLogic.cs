@@ -26,7 +26,6 @@ namespace Importador.Logic
             // Adiciona os dados ao gridData
             return new Models.DataIn { Conta = conta, Valor = valor, Descricao = descricao };
 
-            
         }
     }
 }
