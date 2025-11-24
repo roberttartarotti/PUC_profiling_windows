@@ -21,6 +21,7 @@ using Importador.Manager;
 using Windows.Networking.NetworkOperators;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
+using System.Threading;
 
 // O modelo de item de Página em Branco está documentado em https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x416
 
@@ -42,16 +43,31 @@ namespace Importador
             contasManager.fileProgressHandler = UpdateFileProgress;
             contasManager.maxFileProgressHandler = UpdateFileMaxProgress;
 
-            gridData.ItemsSource = contasManager.ContasControl; // Assuming MyDataGrid is the name of your DataGrid
+            //gridData.ItemsSource = contasManager.ContasControl; // Assuming MyDataGrid is the name of your DataGrid
+
+            timer.Interval = TimeSpan.FromMilliseconds(100); // Fires every second
+            timer.Tick += timer_Tick;
+
+            synchronizationContext = SynchronizationContext.Current;
         }
 
+        private DispatcherTimer timer = new DispatcherTimer();
+
         private ContasManager contasManager;
+
+        private SynchronizationContext synchronizationContext;
+
+        private void timer_Tick(object sender, object e)
+        {
+
+        }
 
         private async Task UpdateMaxProgress(double value)
         {
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
-                prbStatus.Maximum = value;
+                prbStatus.Maximum = (prbStatus.Value + value) - prbStatus.Maximum;
+                prbStatus.Value = 0;
             });
         }
 
@@ -63,22 +79,49 @@ namespace Importador
             });
         }
 
+        private DateTime lastUpdate;
+
         private async Task UpdateFileMaxProgress(double value)
         {
+            lastUpdate = DateTime.Now;
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 prbStatusFile.Maximum = value;
-                txtFileStatus.Text = $"Importando {prbStatusFile.Value} bytes de {prbStatusFile.Maximum} bytes";
             });
+            await UpdateFileTextProgress(0);
         }
 
         private async Task UpdateFileProgress(double value)
         {
+            TimeSpan diffTime = DateTime.Now - lastUpdate;
+            double millis = diffTime.TotalMilliseconds;
+            double bytesPerSecond = (millis > 0) ? (value / millis) * 1000 : 0;
+            lastUpdate = DateTime.Now;
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
                 prbStatusFile.Value += value;
-                txtFileStatus.Text = $"Importando {prbStatusFile.Value} bytes de {prbStatusFile.Maximum} bytes";
             });
+            await UpdateFileTextProgress(bytesPerSecond);
+        }
+
+        private async Task UpdateFileTextProgress(double bytesPerSecond)
+        {
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                txtFileStatus.Text = $"Importando {FormatBytes(prbStatusFile.Value)} de {FormatBytes(prbStatusFile.Maximum)} com uma taxa de {FormatBytes(bytesPerSecond)}PS";
+            });
+        }
+
+        private string FormatBytes(double bytes)
+        {
+            string[] sizes = { "B", "KB", "MB", "GB", "TB" };
+            int order = 0;
+            while (bytes >= 1024 && order < sizes.Length - 1)
+            {
+                order++;
+                bytes = bytes / 1024;
+            }
+            return String.Format("{0:0.##} {1}", bytes, sizes[order]);
         }
 
         private async void btnArquivo_Click(object sender, RoutedEventArgs e)

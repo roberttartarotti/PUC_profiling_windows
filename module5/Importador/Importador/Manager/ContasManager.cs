@@ -20,8 +20,8 @@ namespace Importador.Manager
 
     public class ContasManager
     {
-        public List<Models.Conta> Contas { get; private set; }
-        public ObservableCollection<ContaControl> ContasControl { get; set; }
+        private Dictionary<int, Models.Conta> _Contas;
+        //public ObservableCollection<ContaControl> ContasControl { get; set; }
 
         private ContasLogic contasLogic;
 
@@ -33,8 +33,8 @@ namespace Importador.Manager
 
         public ContasManager()
         {
-            Contas = new List<Models.Conta>();
-            ContasControl = new ObservableCollection<ContaControl>();
+            _Contas = new Dictionary<int, Models.Conta>();
+            //ContasControl = new ObservableCollection<ContaControl>();
             contasLogic = new ContasLogic();
         }
 
@@ -56,7 +56,6 @@ namespace Importador.Manager
                     uint size = buffer.Length;
                     string text = "";
                     bool primeiraLinha = false;
-                    int linhasProcessadas = 0;
                     SemaphoreSlim semaphore = new SemaphoreSlim(20);
                     List<Task> trackedTasks = new List<Task>();
                     while (size > 0)
@@ -97,10 +96,8 @@ namespace Importador.Manager
 
                         linhas = linhas.Where(x => !string.IsNullOrEmpty(x)).ToList();
 
-                        linhasProcessadas += linhas.Count;
-
                         if (maxProgressHandler != null)
-                            await maxProgressHandler(linhasProcessadas);
+                            await maxProgressHandler(linhas.Count);
 
                         trackedTasks.Add(Task.Run(() =>
                         {
@@ -134,6 +131,18 @@ namespace Importador.Manager
             });
         }
 
+        private Conta getConta(int id)
+        {
+            lock (_Contas)
+            {
+                if (!_Contas.ContainsKey(id))
+                {
+                    _Contas.Add(id, new Conta(id));
+                }
+                return _Contas[id];
+            }
+        }
+
         private async Task ProcessLine(string line, string path, Guid lineId)
         {
             Log.ImportadorProvider.Log.ProcessLine(path, line, lineId.ToString());
@@ -146,39 +155,26 @@ namespace Importador.Manager
 
                 try
                 {
-                    Conta conta = null;
-                    lock (Contas)
-                    {
-                        conta = Contas.Where(c => c.ID == data.Conta).FirstOrDefault();
-                        if (conta == null)
-                        {
-                            conta = new Models.Conta(data.Conta);   
-                            Contas.Add(conta);
-                        }
-                    }
+                    Conta conta = getConta(data.Conta);
 
-                    lock (conta)
-                    {
-                        conta.Saldo += data.Valor;
-                        conta.Operacoes.Add(data);
-                    }
+                    conta.AddOperacao(data);                    
 
                     //Thread.Sleep(1000);
 
-                    await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                    {
+                    //await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+                    //{
 
-                        var control = ContasControl.Where(c => c.NumConta == conta.ID).FirstOrDefault();
-                        if (control == null)
-                        {
-                            control = new ContaControl(conta.ID);
-                            ContasControl.Add(control);
-                        }
+                    //    var control = ContasControl.Where(c => c.NumConta == conta.ID).FirstOrDefault();
+                    //    if (control == null)
+                    //    {
+                    //        control = new ContaControl(conta.ID);
+                    //        ContasControl.Add(control);
+                    //    }
 
-                        control.Saldo = conta.Saldo;
-                        control.Events = conta.Operacoes.Count;
+                    //    control.Saldo = conta.Saldo;
+                    //    control.Events = conta.Operacoes.Count;
 
-                    });
+                    //});
 
                     if (progressHandler != null)
                         await progressHandler(1);

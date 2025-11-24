@@ -10,7 +10,7 @@ namespace Importador.Models
     public class DataIn
     {
         public int Conta { get; set; }
-        public decimal Valor { get; set; }
+        public double Valor { get; set; }
         public string Descricao { get; set; }
     }
 }

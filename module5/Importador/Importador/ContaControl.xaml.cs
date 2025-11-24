@@ -30,7 +30,7 @@ namespace Importador
             }
         }
 
-        public decimal Saldo
+        public double Saldo
         {
             set
             {

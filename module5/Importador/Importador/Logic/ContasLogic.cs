@@ -20,7 +20,7 @@ namespace Importador.Logic
             string[] valores = line.Split(';');
 
             int conta = int.Parse(valores[0]);
-            decimal valor = decimal.Parse(valores[1]);
+            double valor = double.Parse(valores[1]);
             string descricao = valores[2];
 
             // Adiciona os dados ao gridData
