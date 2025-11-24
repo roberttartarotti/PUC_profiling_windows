@@ -22,6 +22,7 @@ using Windows.Networking.NetworkOperators;
 using Windows.ApplicationModel.Core;
 using Windows.UI.Core;
 using System.Threading;
+using Newtonsoft.Json.Linq;
 
 // O modelo de item de Página em Branco está documentado em https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x416
 
@@ -43,7 +44,11 @@ namespace Importador
             contasManager.fileProgressHandler = UpdateFileProgress;
             contasManager.maxFileProgressHandler = UpdateFileMaxProgress;
 
-            //gridData.ItemsSource = contasManager.ContasControl; // Assuming MyDataGrid is the name of your DataGrid
+            contasManager.endProgressHandler = EndProgress;
+
+            ContasControl = new ObservableCollection<ContaControl>();
+
+            gridData.ItemsSource = ContasControl;
 
             timer.Interval = TimeSpan.FromMilliseconds(100); // Fires every second
             timer.Tick += timer_Tick;
@@ -51,15 +56,37 @@ namespace Importador
             synchronizationContext = SynchronizationContext.Current;
         }
 
+        public ObservableCollection<ContaControl> ContasControl { get; set; }
+
         private DispatcherTimer timer = new DispatcherTimer();
 
         private ContasManager contasManager;
 
         private SynchronizationContext synchronizationContext;
 
+        private bool InProgress = false;
+
+        private CancellationTokenSource cts = new CancellationTokenSource();
+        private CancellationToken ct;
+
         private void timer_Tick(object sender, object e)
         {
+            foreach (var conta in contasManager.Contas)
+            {
+                var control = ContasControl.Where(c => c.NumConta == conta.ID).FirstOrDefault();
+                if (control == null)
+                {
+                    control = new ContaControl(conta.ID);
+                    ContasControl.Add(control);
+                }
+                control.Saldo = conta.Saldo;
+                control.Events = conta.Operacoes.Count;
+            }
 
+            if(!InProgress)
+            {
+                timer.Stop();
+            }
         }
 
         private async Task UpdateMaxProgress(double value)
@@ -84,11 +111,18 @@ namespace Importador
         private async Task UpdateFileMaxProgress(double value)
         {
             lastUpdate = DateTime.Now;
+            InProgress = true;
             await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
             {
+                timer.Start();
                 prbStatusFile.Maximum = value;
             });
             await UpdateFileTextProgress(0);
+        }
+
+        private async Task EndProgress()
+        {
+            await Cancel();
         }
 
         private async Task UpdateFileProgress(double value)
@@ -124,14 +158,12 @@ namespace Importador
             return String.Format("{0:0.##} {1}", bytes, sizes[order]);
         }
 
-        private async void btnArquivo_Click(object sender, RoutedEventArgs e)
+        private async Task Import()
         {
             // Configura o seletor de arquivos
             var picker = new Windows.Storage.Pickers.FileOpenPicker();
             picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
             picker.FileTypeFilter.Add(".csv");
-
-            Log.ImportadorProvider.Log.StartedImport();
 
             // Mostra o seletor para o usuário
             StorageFile arquivoSelecionado = await picker.PickSingleFileAsync();
@@ -142,15 +174,41 @@ namespace Importador
                 return;
             }
 
+            btnArquivo.Content = "Cancelar";
+
             txtArquivo.Text = arquivoSelecionado.Path;
             prbStatus.Value = 0;
 
+            ct = cts.Token;
+
             await Task.Run(async () =>
             {
-                await contasManager.ImportCSV(arquivoSelecionado);
-            });
+                await contasManager.ImportCSV(arquivoSelecionado, ct);
+            }, ct);
+        }
 
-            Log.ImportadorProvider.Log.CompletedImport();
+        private async Task Cancel()
+        {
+            cts.Cancel();
+            cts = new CancellationTokenSource();
+            InProgress = false;
+
+            await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                btnArquivo.Content = "Importar";
+            });
+        }
+
+        private async void btnArquivo_Click(object sender, RoutedEventArgs e)
+        {
+            if (!InProgress)
+            {
+                await Import();
+            }
+            else
+            {
+                await Cancel();
+            }
         }
 
     }

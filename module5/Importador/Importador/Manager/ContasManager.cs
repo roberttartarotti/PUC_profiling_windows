@@ -1,4 +1,5 @@
-﻿using Importador.Logic;
+﻿using Importador.Log;
+using Importador.Logic;
 using Importador.Models;
 using System;
 using System.Collections.Generic;
@@ -17,11 +18,12 @@ using Windows.UI.Xaml.Controls;
 namespace Importador.Manager
 {
     public delegate Task UpdateProgressHandler(double value);
+    public delegate Task EndProgressHandler();
 
     public class ContasManager
     {
         private Dictionary<int, Models.Conta> _Contas;
-        //public ObservableCollection<ContaControl> ContasControl { get; set; }
+        
 
         private ContasLogic contasLogic;
 
@@ -31,15 +33,29 @@ namespace Importador.Manager
         public UpdateProgressHandler fileProgressHandler;
         public UpdateProgressHandler maxFileProgressHandler;
 
+        public EndProgressHandler endProgressHandler;
+
         public ContasManager()
         {
             _Contas = new Dictionary<int, Models.Conta>();
-            //ContasControl = new ObservableCollection<ContaControl>();
             contasLogic = new ContasLogic();
         }
 
-        public async Task ImportCSV(StorageFile file)
+        public List<Models.Conta> Contas
         {
+            get
+            {
+                lock (_Contas)
+                {
+                    return _Contas.Values.ToList();
+                }
+            }
+        }
+
+        public async Task ImportCSV(StorageFile file, CancellationToken ct)
+        {
+            Log.ImportadorProvider.Log.StartedImport();
+
             try
             {
                 Log.ImportadorProvider.Log.ProcessFile(file.Path);
@@ -60,6 +76,18 @@ namespace Importador.Manager
                     List<Task> trackedTasks = new List<Task>();
                     while (size > 0)
                     {
+                        if (ct.IsCancellationRequested)
+                        {
+                            try
+                            {
+                                ct.ThrowIfCancellationRequested();
+                            }
+                            catch (OperationCanceledException)
+                            {
+                                ImportadorProvider.Log.ProcessCancel(file.Path);
+                            }
+                        }
+
                         List<string> linhas = new List<string>();
 
                         await semaphore.WaitAsync();
@@ -101,33 +129,39 @@ namespace Importador.Manager
 
                         trackedTasks.Add(Task.Run(() =>
                         {
-                            ProcessLines(linhas, file.Path);
+                            ProcessLines(linhas, file.Path, ct);
                             semaphore.Release();
-                        }));
+                        }, ct));
                     }
                     await Task.WhenAll(trackedTasks);
+
+                    if (endProgressHandler != null)
+                        endProgressHandler();
+
                 }
+
+                Log.ImportadorProvider.Log.CompletedImport();
 
             }
             catch (Exception ex)
             {
                 Log.ImportadorProvider.Log.ErrorProcess(file.Path);
-                ContentDialog dialog = new ContentDialog
-                {
-                    Title = "Erro",
-                    Content = $"Erro ao importar o arquivo CSV: {ex.Message}",
-                    CloseButtonText = "OK"
-                };
-                await dialog.ShowAsync();
+                //ContentDialog dialog = new ContentDialog
+                //{
+                //    Title = "Erro",
+                //    Content = $"Erro ao importar o arquivo CSV: {ex.Message}",
+                //    CloseButtonText = "OK"
+                //};
+                //await dialog.ShowAsync();
             }
 
         }
 
-        private void ProcessLines(List<string> lines, string path)
+        private void ProcessLines(List<string> lines, string path, CancellationToken ct)
         {
             lines.AsParallel().ForAll(async linha =>
             {
-                await ProcessLine(linha, path, Guid.NewGuid());
+                await ProcessLine(linha, path, Guid.NewGuid(), ct);
             });
         }
 
@@ -143,8 +177,10 @@ namespace Importador.Manager
             }
         }
 
-        private async Task ProcessLine(string line, string path, Guid lineId)
+        private async Task ProcessLine(string line, string path, Guid lineId, CancellationToken ct)
         {
+            if (ct.IsCancellationRequested) return;
+
             Log.ImportadorProvider.Log.ProcessLine(path, line, lineId.ToString());
 
             try
@@ -158,23 +194,6 @@ namespace Importador.Manager
                     Conta conta = getConta(data.Conta);
 
                     conta.AddOperacao(data);                    
-
-                    //Thread.Sleep(1000);
-
-                    //await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-                    //{
-
-                    //    var control = ContasControl.Where(c => c.NumConta == conta.ID).FirstOrDefault();
-                    //    if (control == null)
-                    //    {
-                    //        control = new ContaControl(conta.ID);
-                    //        ContasControl.Add(control);
-                    //    }
-
-                    //    control.Saldo = conta.Saldo;
-                    //    control.Events = conta.Operacoes.Count;
-
-                    //});
 
                     if (progressHandler != null)
                         await progressHandler(1);

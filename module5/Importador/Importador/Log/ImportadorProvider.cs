@@ -56,5 +56,11 @@ namespace Importador.Log
             WriteEvent(23, fileName, lineCode, conta);
         }
 
+        [Event(30, Level = EventLevel.Error, Message = "Processo do arquivo {0} cancelado")]
+        public void ProcessCancel(string fileName)
+        {
+            WriteEvent(30, fileName);
+        }
+
     }
 }
