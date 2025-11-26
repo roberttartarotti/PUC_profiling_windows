@@ -1,0 +1,86 @@
+<Page
+    x:Class="MultiThreading.DeadlockPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MultiThreading"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <ScrollViewer>
+        <StackPanel Orientation="Vertical"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    Spacing="20"
+                    Margin="20">
+
+            <!-- Back button -->
+            <Button Content="← Voltar"
+                    Click="BackButton_Click"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,20"/>
+
+            <!-- Header -->
+            <TextBlock Text="💀 Laboratório de Deadlock Controlado"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"/>
+
+            <!-- Warning -->
+            <TextBlock Text="⚠️ AVISO: Esta demo cria deadlocks intencionalmente para análise educacional! A aplicação pode travar durante o teste."
+                       FontSize="14"
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Center"
+                       MaxWidth="600"
+                       Foreground="Orange"/>
+
+            <!-- Buttons panel -->
+            <StackPanel Orientation="Horizontal"
+                        Spacing="15"
+                        HorizontalAlignment="Center"
+                        Margin="0,20,0,0">
+
+                <Button Content="Deadlock Simples A→B"
+                        Click="TriggerSimpleDeadlock_Click"
+                        Padding="20,15"/>
+
+                <Button Content="Demo de Prevenção"
+                        Click="TriggerPreventionDemo_Click"
+                        Padding="20,15"/>
+
+                <Button Content="PARAR EMERGÊNCIA"
+                        Click="EmergencyStop_Click"
+                        Padding="20,15"/>
+
+            </StackPanel>
+
+            <!-- Status text -->
+            <TextBlock x:Name="StatusText"
+                       Text="Pronto para teste de deadlock. Status: Nenhum deadlock detectado"
+                       FontSize="16"
+                       HorizontalAlignment="Center"
+                       Margin="0,20,0,0"/>
+
+            <!-- Instructions -->
+            <TextBlock FontSize="12"
+                       TextWrapping="Wrap"
+                       Foreground="Gray"
+                       HorizontalAlignment="Center"
+                       MaxWidth="800"
+                       Margin="0,20,0,0">
+                <Run Text="🔍 INSTRUÇÕES PARA DEBUGGING:"
+                     FontWeight="SemiBold"/>
+                <LineBreak/><LineBreak/>
+                <Run Text="Visual Studio Debugger:"/>
+                <LineBreak/>
+                <Run Text="1. Quando deadlock ocorrer, pressione Ctrl+Alt+Break"/>
+                <LineBreak/>
+                <Run Text="2. Abra Debug → Windows → Threads"/>
+                <LineBreak/>
+                <Run Text="3. Examine as call stacks das threads bloqueadas"/>
+            </TextBlock>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

@@ -1,0 +1,86 @@
+<Page
+    x:Class="MultiThreading.ConcurrencyPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:MultiThreading"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+    <ScrollViewer>
+        <StackPanel Orientation="Vertical"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    Spacing="20"
+                    Margin="20">
+
+            <!-- Back button -->
+            <Button Content="← Voltar"
+                    Click="BackButton_Click"
+                    HorizontalAlignment="Left"
+                    Margin="0,0,0,20"/>
+
+            <!-- Header -->
+            <TextBlock Text="🔄 Demonstração de Concorrência vs Paralelismo"
+                       FontSize="24"
+                       FontWeight="Bold"
+                       HorizontalAlignment="Center"/>
+
+            <!-- Description -->
+            <TextBlock Text="Esta demo mostra a diferença entre execução concorrente e paralela para análise no VS Profiler. Observe os padrões diferentes no Concurrency Visualizer."
+                       FontSize="14"
+                       TextWrapping="Wrap"
+                       HorizontalAlignment="Center"
+                       MaxWidth="600"/>
+
+            <!-- Buttons panel -->
+            <StackPanel Orientation="Horizontal"
+                        Spacing="15"
+                        HorizontalAlignment="Center"
+                        Margin="0,20,0,0">
+
+                <Button Content="Demo Concorrente (50 threads)"
+                        Click="StartConcurrentDemo_Click"
+                        Padding="20,15"/>
+
+                <Button Content="Demo Paralelo (50 threads)"
+                        Click="StartParallelDemo_Click"
+                        Padding="20,15"/>
+
+                <Button Content="Parar Demo"
+                        Click="StopDemo_Click"
+                        Padding="20,15"/>
+
+            </StackPanel>
+
+            <!-- Status text -->
+            <TextBlock x:Name="StatusText"
+                       Text="Pronto para iniciar demo. Threads ativas: 0, Operações: 0"
+                       FontSize="16"
+                       HorizontalAlignment="Center"
+                       Margin="0,20,0,0"/>
+
+            <!-- Instructions -->
+            <TextBlock FontSize="12"
+                       TextWrapping="Wrap"
+                       Foreground="Gray"
+                       HorizontalAlignment="Center"
+                       MaxWidth="800"
+                       Margin="0,20,0,0">
+                <Run Text="INSTRUÇÕES PARA PROFILER:"/>
+                <LineBreak/>
+                <Run Text="1. Compile em modo Release"/>
+                <LineBreak/>
+                <Run Text="2. Analyze → Concurrency Visualizer"/>
+                <LineBreak/>
+                <Run Text="3. Inicie o profiling e execute uma das demos"/>
+                <LineBreak/>
+                <Run Text="4. Observe: Verde (executando), Vermelho (bloqueado), Amarelo (pronto)"/>
+                <LineBreak/>
+                <Run Text="5. Compare os padrões entre demo concorrente vs paralelo"/>
+            </TextBlock>
+
+        </StackPanel>
+    </ScrollViewer>
+</Page>

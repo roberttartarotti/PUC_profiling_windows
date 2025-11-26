@@ -47,4 +47,14 @@
 .idea/
 .vs/
 .vscode/
-.vscode/                                                                
+.vscode/       
+
+# .NET build artifacts
+bin/
+obj/
+[Bb]in/
+[Oo]bj/
+[Bb]in/[Dd]ebug/
+[Bb]in/[Rr]elease/
+[Oo]bj/[Dd]ebug/
+[Oo]bj/[Rr]elease/
