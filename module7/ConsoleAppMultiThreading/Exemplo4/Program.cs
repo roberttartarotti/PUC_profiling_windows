@@ -72,7 +72,7 @@ class DifferentLocksExample
                 {
                     for (int j = 0; j < 100_000; j++)
                     {
-                        mutex.WaitOne();
+                        mutex.WaitOne();                        
                         try
                         {
                             value++;

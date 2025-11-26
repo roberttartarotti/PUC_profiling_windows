@@ -30,21 +30,21 @@ class TimeoutLockExample
             int randomDelay = random.Next(10, 50);
             Thread.Sleep(randomDelay);
 
-            if (Monitor.TryEnter(firstLock, 2000))  // Timeout maior
+            if (Monitor.TryEnter(firstLock, 500))  // Timeout maior
             {
                 try
                 {
                     Console.WriteLine($"{threadName}: Adquiriu primeiro lock");
                     
                     // Delay menor para reduzir janela de contenção
-                    Thread.Sleep(25);
+                    Thread.Sleep(100);
 
-                    if (Monitor.TryEnter(secondLock, 1500))
+                    if (Monitor.TryEnter(secondLock, 100))
                     {
                         try
                         {
                             Console.WriteLine($"{threadName}: SUCESSO - Adquiriu ambos os locks! ✓");
-                            Thread.Sleep(50); // Simula trabalho
+                            Thread.Sleep(1000); // Simula trabalho
                             return; // Sai da função com sucesso
                         }
                         finally

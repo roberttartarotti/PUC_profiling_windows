@@ -36,7 +36,7 @@ class RaceConditionExample
 
         watch.Stop();
 
-        // Resultado deveria ser 1.000.000
+        // Resultado deveria ser 10.000.000
         Console.WriteLine($"Valor final: {counter}");
         Console.WriteLine($"Tempo: {watch.ElapsedMilliseconds}ms");
         Console.WriteLine($"Perda de dados: {10_000_000 - counter} incrementos perdidos!\n");

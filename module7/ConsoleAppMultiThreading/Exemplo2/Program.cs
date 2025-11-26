@@ -6,7 +6,7 @@ using System.Diagnostics;
 class LockExample
 {
     private static int counter = 0;
-    private static readonly object lockObject = new object();  // ← LOCK OBJECT
+    private static readonly object lockObject = new ();  // ← LOCK OBJECT
 
     static void Main()
     {
@@ -20,7 +20,7 @@ class LockExample
         {
             threads[i] = new Thread(() =>
             {
-                for (int j = 0; j < 1_000_000; j++)
+                for (int j = 0; j < 10_000_000; j++)
                 {
                     lock (lockObject)  // ← SEÇÃO CRÍTICA PROTEGIDA
                     {

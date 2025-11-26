@@ -24,6 +24,9 @@ class ContentionExample
         Console.WriteLine("\nTeste 3: 8 threads competindo pelo lock");
         MeasureContention(8);
 
+        // Teste com 20 threads (super-saturação)
+        Console.WriteLine("\nTeste 4: 20 threads competindo pelo lock");
+        MeasureContention(20);
     }
 
     static void MeasureContention(int numThreads)

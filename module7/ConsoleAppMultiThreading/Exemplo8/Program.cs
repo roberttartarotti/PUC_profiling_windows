@@ -71,11 +71,7 @@ class CriticalSectionOptimizationExample
                         result = Math.Sqrt(k);
                     }
 
-                    // Lock apenas para modificar dados críticos
-                    lock (lockObject)
-                    {
-                        value++;
-                    }
+                    Interlocked.Add(ref value, 1); // Simula uso do resultado para evitar otimização]
                 }
             });
             threads[i].Start();
