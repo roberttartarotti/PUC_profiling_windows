@@ -42,10 +42,5 @@ class LockExample
         Console.WriteLine($"Tempo: {watch.ElapsedMilliseconds}ms");
         Console.WriteLine($"Resultado correto! ✓\n");
 
-        Console.WriteLine("EXPLICAÇÃO:");
-        Console.WriteLine("O 'lock' garante que apenas UMA thread execute");
-        Console.WriteLine("o código dentro do bloco por vez.");
-        Console.WriteLine("\nMANTER LOCK O MÍNIMO POSSÍVEL!");
-        Console.WriteLine("Locks longos causam contenção - threads aguardando.");
     }
 }

@@ -20,7 +20,6 @@ class TimeoutLockExample
         thread1.Join();
         thread2.Join();
 
-        Console.WriteLine("\n✓ Timeout preveniu o deadlock!");
     }
 
     static void ThreadFunc(string threadName, object firstLock, object secondLock)

@@ -23,11 +23,6 @@ class PreventDeadlockExample
 
         Console.WriteLine("\n✓ Nenhum deadlock! Completado com sucesso!");
 
-        Console.WriteLine("\nSOLUÇÃO:");
-        Console.WriteLine("Ambas as threads adquirem os locks na MESMA ordem:");
-        Console.WriteLine("1º: lock1");
-        Console.WriteLine("2º: lock2");
-        Console.WriteLine("\nIsso previne ciclos de espera!");
     }
 
     // Ordem: lock1 → lock2

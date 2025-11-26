@@ -26,11 +26,6 @@ class DeadlockExample
         if (thread1.IsAlive && thread2.IsAlive)
         {
             Console.WriteLine("❌ DEADLOCK DETECTADO!");
-            Console.WriteLine("\nO QUE ACONTECEU:");
-            Console.WriteLine("Thread 1: Adquiriu lock1, aguardando lock2");
-            Console.WriteLine("Thread 2: Adquiriu lock2, aguardando lock1");
-            Console.WriteLine("\nAmbas aguardando para sempre!");
-            Console.WriteLine("\nPressione Ctrl+C para sair...");
 
             // Tentar terminar threads
             thread1.Join(TimeSpan.FromSeconds(1));

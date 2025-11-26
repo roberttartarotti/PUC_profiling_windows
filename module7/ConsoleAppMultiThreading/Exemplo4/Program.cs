@@ -54,8 +54,6 @@ class DifferentLocksExample
         watch.Stop();
         Console.WriteLine($"  Valor: {value}, Tempo: {watch.ElapsedMilliseconds}ms");
         Console.WriteLine($"  Uso: lock(objeto) {{ código crítico }}");
-        Console.WriteLine($"  Vantagem: Simples, menor overhead");
-        Console.WriteLine($"  Desvantagem: Sem timeout, sem named locks");
     }
 
     // 2. MUTEX
@@ -93,8 +91,6 @@ class DifferentLocksExample
             watch.Stop();
             Console.WriteLine($"  Valor: {value}, Tempo: {watch.ElapsedMilliseconds}ms");
             Console.WriteLine($"  Uso: mutex.WaitOne(); ... mutex.ReleaseMutex();");
-            Console.WriteLine($"  Vantagem: Pode ser compartilhado entre processos (named mutex)");
-            Console.WriteLine($"  Desvantagem: Mais overhead que lock");
         }
     }
 
@@ -154,11 +150,6 @@ class DifferentLocksExample
         ReaderWriterLockSlim rwLock = new ReaderWriterLockSlim();
         int value = 0;
 
-        Console.WriteLine("  ReaderWriterLockSlim permite:");
-        Console.WriteLine("    - Múltiplos LEITORES simultâneos");
-        Console.WriteLine("    - Apenas 1 ESCRITOR (exclusivo)");
-        Console.WriteLine("    - Escritor bloqueia todos os leitores");
-
         // 8 threads: 6 leitores, 2 escritores
         Thread[] threads = new Thread[8];
 
@@ -211,6 +202,5 @@ class DifferentLocksExample
 
         Console.WriteLine($"  Tempo: {watch.ElapsedMilliseconds}ms");
         Console.WriteLine($"  Valor final: {value}");
-        Console.WriteLine($"  Ideal para: Muitas leituras, poucas escritas");
     }
 }

@@ -11,10 +11,10 @@ class CriticalSectionOptimizationExample
     {
         Console.WriteLine("=== EXEMPLO 8: SEÇÕES CRÍTICAS CURTAS ===\n");
 
-        Console.WriteLine("❌ MAU: Lock longo com processamento pesado");
+        Console.WriteLine("Lock longo com processamento pesado");
         MeasureBadApproach();
 
-        Console.WriteLine("\n✓ BOM: Lock curto, só para dados críticos");
+        Console.WriteLine("\nLock curto, só para dados críticos");
         MeasureGoodApproach();
     }
 
@@ -49,7 +49,6 @@ class CriticalSectionOptimizationExample
 
         watch.Stop();
         Console.WriteLine($"  Tempo: {watch.ElapsedMilliseconds}ms");
-        Console.WriteLine($"  MUITA CONTENÇÃO! Outras threads aguardam cálculo.");
     }
 
     // ✓ BOA PRÁTICA: Lock mínimo
@@ -86,6 +85,5 @@ class CriticalSectionOptimizationExample
 
         watch.Stop();
         Console.WriteLine($"  Tempo: {watch.ElapsedMilliseconds}ms");
-        Console.WriteLine($"  MENOS CONTENÇÃO! Lock é rápido.");
     }
 }

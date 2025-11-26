@@ -24,11 +24,6 @@ class ContentionExample
         Console.WriteLine("\nTeste 3: 8 threads competindo pelo lock");
         MeasureContention(8);
 
-        Console.WriteLine("\n\nOBSERVAÇÃO:");
-        Console.WriteLine("Quanto mais threads, MAIS LENTO fica!");
-        Console.WriteLine("Por quê? Contenção! Muitas threads aguardando o mesmo lock.");
-        Console.WriteLine("\nIsso é EXATAMENTE o que você verá no Concurrency Visualizer");
-        Console.WriteLine("como faixas VERMELHAS no gráfico de threads.");
     }
 
     static void MeasureContention(int numThreads)
