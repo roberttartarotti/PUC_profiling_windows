@@ -1,0 +1,38 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PokeProfiler.UI", "src\PokeProfiler.UI\PokeProfiler.UI.csproj", "{A6A1FF20-8A7E-4C29-8B4B-7A0E5B1E3D90}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PokeProfiler.Core", "src\PokeProfiler.Core\PokeProfiler.Core.csproj", "{7C8E5E1E-0B6A-4D5B-9E73-6F9C2B43B2A1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+	ProjectSection(SolutionItems) = preProject
+		docs\INVESTIGATION_GUIDE.md = docs\INVESTIGATION_GUIDE.md
+		docs\PRACTICAL_EXERCISES.md = docs\PRACTICAL_EXERCISES.md
+		docs\SCALABILITY_CONCEPTS.md = docs\SCALABILITY_CONCEPTS.md
+		docs\VTUNE_SCALABILITY_GUIDE.md = docs\VTUNE_SCALABILITY_GUIDE.md
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A6A1FF20-8A7E-4C29-8B4B-7A0E5B1E3D90}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6A1FF20-8A7E-4C29-8B4B-7A0E5B1E3D90}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6A1FF20-8A7E-4C29-8B4B-7A0E5B1E3D90}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6A1FF20-8A7E-4C29-8B4B-7A0E5B1E3D90}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C8E5E1E-0B6A-4D5B-9E73-6F9C2B43B2A1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C8E5E1E-0B6A-4D5B-9E73-6F9C2B43B2A1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C8E5E1E-0B6A-4D5B-9E73-6F9C2B43B2A1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C8E5E1E-0B6A-4D5B-9E73-6F9C2B43B2A1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2AEDA103-EE62-4034-9934-CA3160B6AC3F}
+	EndGlobalSection
+EndGlobal

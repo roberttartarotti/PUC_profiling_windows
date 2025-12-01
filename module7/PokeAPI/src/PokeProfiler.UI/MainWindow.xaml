@@ -1,0 +1,120 @@
+<Window x:Class="PokeProfiler.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Poke Profiler"
+        Height="520"
+        Width="720">
+    <TabControl Margin="10">
+        <TabItem Header="Fetch">
+            <Grid Margin="10">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <StackPanel Orientation="Horizontal"
+                            Margin="0,0,0,8">
+                    <TextBox x:Name="IdsBox"
+                             Width="380"
+                             Text="1,2,3,4,5,6,7,8,9,10"/>
+                    <ComboBox x:Name="StrategyBox"
+                              Width="180"
+                              Margin="8,0,0,0"/>
+                    <Button x:Name="FetchBtn"
+                            Content="Fetch"
+                            Width="60"
+                            Margin="8,0,0,0"/>
+                </StackPanel>
+                <TextBlock Grid.Row="1"
+                           FontSize="11"
+                           Foreground="Gray"
+                           Margin="0,0,0,4">
+                    <Run Text="⚠ = Problem scenarios for investigation"/>
+                    <LineBreak/>
+                    <Run Text="Format: 1,2,3 or 1-600 (range) or mix: 1-10,25,50-60"/>
+                </TextBlock>
+                <TextBlock Grid.Row="2"
+                           Text="Results"
+                           FontWeight="Bold"/>
+                <ListView Grid.Row="3"
+                          x:Name="ResultsView">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Id"
+                                            DisplayMemberBinding="{Binding id}"
+                                            Width="60"/>
+                            <GridViewColumn Header="Name"
+                                            DisplayMemberBinding="{Binding name}"
+                                            Width="140"/>
+                            <GridViewColumn Header="Height"
+                                            DisplayMemberBinding="{Binding height}"
+                                            Width="80"/>
+                            <GridViewColumn Header="Weight"
+                                            DisplayMemberBinding="{Binding weight}"
+                                            Width="80"/>
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+                <StatusBar Grid.Row="4">
+                    <StatusBarItem>
+                        <TextBlock x:Name="StatusText"/>
+                    </StatusBarItem>
+                </StatusBar>
+            </Grid>
+        </TabItem>
+        <TabItem Header="Advanced">
+            <StackPanel Margin="10">
+                <GroupBox Header="ThreadPool Settings"
+                          Margin="0,0,0,10">
+                    <StackPanel Margin="10">
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="0,0,0,8">
+                            <TextBlock Text="MinThreads:"
+                                       Width="120"
+                                       VerticalAlignment="Center"/>
+                            <TextBox x:Name="MinThreadsBox"
+                                     Width="80"
+                                     Text="4"/>
+                            <Button x:Name="ApplyThreadPoolBtn"
+                                    Content="Apply"
+                                    Width="80"
+                                    Margin="8,0,0,0"/>
+                        </StackPanel>
+                        <TextBlock x:Name="ThreadPoolStatus"
+                                   Foreground="Gray"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Header="Artificial Delay (ms)"
+                          Margin="0,0,0,10">
+                    <StackPanel Margin="10">
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="0,0,0,8">
+                            <TextBlock Text="Network Delay:"
+                                       Width="120"
+                                       VerticalAlignment="Center"/>
+                            <TextBox x:Name="ArtificialDelayBox"
+                                     Width="80"
+                                     Text="0"/>
+                        </StackPanel>
+                        <TextBlock Text="Simulates network latency (0=off)"
+                                   Foreground="Gray"/>
+                    </StackPanel>
+                </GroupBox>
+                <GroupBox Header="Instrumentation"
+                          Margin="0,0,0,10">
+                    <StackPanel Margin="10">
+                        <CheckBox x:Name="EnableTracingCheck"
+                                  Content="Enable ActivitySource Tracing"
+                                  IsChecked="True"/>
+                        <TextBlock Text="Export traces for VTune correlation"
+                                   Foreground="Gray"
+                                   Margin="20,5,0,0"/>
+                    </StackPanel>
+                </GroupBox>
+            </StackPanel>
+        </TabItem>
+    </TabControl>
+</Window>
