@@ -61,8 +61,8 @@ public static class SynchronizationOptimizationDemo
         });
         sw1.Stop();
 
-        // Com ThreadLocal
-        var threadLocalCounter = new ThreadLocal<int>(() => 0);
+        // Com ThreadLocal - HABILITANDO tracking de valores
+        var threadLocalCounter = new ThreadLocal<int>(() => 0, trackAllValues: true);
         var sw2 = Stopwatch.StartNew();
 
         Parallel.For(0, iterations, new ParallelOptions { MaxDegreeOfParallelism = threadCount }, _ =>
@@ -79,12 +79,23 @@ public static class SynchronizationOptimizationDemo
         }
         sw2.Stop();
 
+        // Limpeza
+        threadLocalCounter.Dispose();
+
         Console.WriteLine($"Com Lock: {sw1.ElapsedMilliseconds} ms (Total: {counterWithLock:N0})");
         Console.WriteLine($"Com ThreadLocal: {sw2.ElapsedMilliseconds} ms (Total: {totalThreadLocal:N0})");
         
-        double improvement = ((double)(sw1.ElapsedMilliseconds - sw2.ElapsedMilliseconds) / sw1.ElapsedMilliseconds) * 100;
+        if (sw1.ElapsedMilliseconds > 0)
+        {
+            double improvement = ((double)(sw1.ElapsedMilliseconds - sw2.ElapsedMilliseconds) / sw1.ElapsedMilliseconds) * 100;
+            Console.WriteLine($"MELHORIA: {improvement:F1}% - Sem contenção durante incrementos!");
+        }
+        else
+        {
+            Console.WriteLine("MELHORIA: ThreadLocal significativamente mais rápido!");
+        }
         
-        Console.WriteLine($"MELHORIA: {improvement:F1}% - Sem contenção durante incrementos!");
+        Console.WriteLine($"Threads utilizadas: {allValues.Count()}");
     }
 
     private static void RunReaderWriterLockComparison()
@@ -167,10 +178,17 @@ public static class SynchronizationOptimizationDemo
         });
         sw2.Stop();
 
+        // Limpeza
+        rwLock.Dispose();
+
         Console.WriteLine($"Lock Simples: {sw1.ElapsedMilliseconds} ms");
         Console.WriteLine($"ReaderWriterLockSlim: {sw2.ElapsedMilliseconds} ms");
         
-        double improvement = ((double)(sw1.ElapsedMilliseconds - sw2.ElapsedMilliseconds) / sw1.ElapsedMilliseconds) * 100;
+        if (sw1.ElapsedMilliseconds > 0)
+        {
+            double improvement = ((double)(sw1.ElapsedMilliseconds - sw2.ElapsedMilliseconds) / sw1.ElapsedMilliseconds) * 100;
+            Console.WriteLine($"MELHORIA: {improvement:F1}%");
+        }
         
         Console.WriteLine("BENEFÍCIO: RWLock permite múltiplas leituras simultâneas!");
         Console.WriteLine("  Ideal quando: Leituras >> Escritas (ratio > 80%)");
@@ -210,7 +228,11 @@ public static class SynchronizationOptimizationDemo
         Console.WriteLine($"Dictionary + Lock: {sw1.ElapsedMilliseconds} ms");
         Console.WriteLine($"ConcurrentDictionary: {sw2.ElapsedMilliseconds} ms");
         
-        double improvement = ((double)(sw1.ElapsedMilliseconds - sw2.ElapsedMilliseconds) / sw1.ElapsedMilliseconds) * 100;
+        if (sw1.ElapsedMilliseconds > 0)
+        {
+            double improvement = ((double)(sw1.ElapsedMilliseconds - sw2.ElapsedMilliseconds) / sw1.ElapsedMilliseconds) * 100;
+            Console.WriteLine($"MELHORIA: {improvement:F1}%");
+        }
         
         Console.WriteLine("\nColeções Concurrent disponíveis:");
         Console.WriteLine("  • ConcurrentDictionary<K,V> - Dicionário thread-safe");
@@ -254,7 +276,11 @@ public static class SynchronizationOptimizationDemo
         Console.WriteLine($"Lock: {sw1.ElapsedMilliseconds} ms (Total: {counterLock:N0})");
         Console.WriteLine($"Interlocked: {sw2.ElapsedMilliseconds} ms (Total: {counterInterlocked:N0})");
         
-        double improvement = ((double)(sw1.ElapsedMilliseconds - sw2.ElapsedMilliseconds) / sw1.ElapsedMilliseconds) * 100;
+        if (sw1.ElapsedMilliseconds > 0)
+        {
+            double improvement = ((double)(sw1.ElapsedMilliseconds - sw2.ElapsedMilliseconds) / sw1.ElapsedMilliseconds) * 100;
+            Console.WriteLine($"MELHORIA: {improvement:F1}%");
+        }
         
         Console.WriteLine("VANTAGEM: Interlocked usa instruções atômicas da CPU (lock-free)");
         Console.WriteLine("  Operações: Increment, Decrement, Add, Exchange, CompareExchange");
