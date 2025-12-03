@@ -48,7 +48,7 @@ public static class CpuAffinityDemo
         using var scenarioRegion = ProfilingMarkers.CreateScenarioRegion("WithoutAffinity", 
             "Execução sem afinidade: scheduler livre para mover thread entre núcleos");
 
-        var data = GenerateTestData(1_000_000);
+        var data = GenerateTestData(10_000_000);
         var stopwatch = Stopwatch.StartNew();
 
         var task = Task.Run(() =>
@@ -74,7 +74,7 @@ public static class CpuAffinityDemo
         using var scenarioRegion = ProfilingMarkers.CreateScenarioRegion("WithAffinity", 
             "Execução com afinidade: thread pinada ao núcleo 0");
 
-        var data = GenerateTestData(1_000_000);
+        var data = GenerateTestData(10_000_000);
         
         try
         {
@@ -191,7 +191,7 @@ public static class CpuAffinityDemo
     {
         // Trabalho que se beneficia de cache locality
         double sum = 0;
-        for (int iteration = 0; iteration < 10; iteration++)
+        for (int iteration = 0; iteration < 100; iteration++)
         {
             for (int i = 0; i < data.Length; i++)
             {

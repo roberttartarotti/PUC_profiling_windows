@@ -28,11 +28,6 @@ public static class ProfilingMarkers
         
         // Para Visual Studio Performance Profiler - chamada de método visível
         NativeProfilerMarkers.MarkBegin(scenarioName);
-        
-        // Console para debug
-        Console.WriteLine($"[INICIO] {scenarioName}");
-        if (!string.IsNullOrEmpty(description))
-            Console.WriteLine($"  {description}");
     }
     
     /// <summary>
@@ -48,11 +43,6 @@ public static class ProfilingMarkers
         
         // Para Visual Studio Performance Profiler - chamada de método visível
         NativeProfilerMarkers.MarkEnd(scenarioName);
-        
-        // Console para debug
-        Console.WriteLine($"[FIM] {scenarioName}");
-        if (!string.IsNullOrEmpty(summary))
-            Console.WriteLine($"  {summary}");
     }
     
     /// <summary>

@@ -13,7 +13,7 @@ namespace Aula3.Demonstrations;
 public static class FalseSharingDemo
 {
     private const int CacheLineSize = 64; // 64 bytes típico em x86/x64
-    private const int ExtremeIterations = 50_000_000; // 50M para tornar visível
+    private const int ExtremeIterations = 100_000_000; // 100M para tornar visível
     private static readonly ConcurrentQueue<string> _profilerHints = new();
 
     public static void RunDemo()
@@ -24,7 +24,7 @@ public static class FalseSharingDemo
         Console.WriteLine("\n=== DEMONSTRAÇÃO: FALSE SHARING - O GARGALO FANTASMA ===");
         Console.WriteLine("VERSÃO EXTREMA - CONFIGURADA PARA MOSTRAR CACHE LINE PING-PONG");
         Console.WriteLine($"Tamanho típico da linha de cache: {CacheLineSize} bytes");
-        Console.WriteLine($"Iterações por teste: {ExtremeIterations:N0} (50 milhões!)\n");
+        Console.WriteLine($"Iterações por teste: {ExtremeIterations:N0} (500 milhões!)\n");
 
         ShowFalseSharingProfilingInstructions();
 
