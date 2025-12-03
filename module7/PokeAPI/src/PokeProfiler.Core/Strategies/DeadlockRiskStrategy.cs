@@ -46,10 +46,10 @@ public class DeadlockRiskStrategy : IPokemonFetchStrategy
                     }
                     else
                     {
-                        lock (_lock2)
+                        lock (_lock1)
                         {
                             Thread.Sleep(10); // Increase deadlock window
-                            lock (_lock1)
+                            lock (_lock2)
                             {
                                 list.Add(p);
                             }

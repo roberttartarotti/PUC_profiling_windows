@@ -11,11 +11,12 @@ namespace PokeProfiler.UI;
 public partial class MainWindow : Window
 {
     private readonly PokeApiClient _client = new();
+
     private readonly PokemonRepository _repo;
     private readonly (string name, IPokemonFetchStrategy strat)[] _strategies;
     private CancellationTokenSource? _cts;
 
-    // Estruturas para demonstração de escalabilidade
+    // Estruturas para demonstração de escalabilidade    
     private readonly ConcurrentQueue<string> _lockFreeQueue = new();
     private readonly object _lockObject = new();
     private long _contentionCounter = 0;
@@ -27,6 +28,7 @@ public partial class MainWindow : Window
         _repo = new PokemonRepository(dbPath);
         _strategies =
         [
+            ("Optimized Scalable", new OptimizedScalableStrategy(_client)),
             ("Sequential", new SequentialStrategy(_client)),
             ("Task.WhenAll", new TaskWhenAllStrategy(_client)),
             ("ThreadPool Storm", new ThreadPoolStormStrategy(_client)),
@@ -45,6 +47,7 @@ public partial class MainWindow : Window
             ("🔧 Thread Local Storage", new ThreadLocalStrategy(_client)),
             ("🔧 Concurrent Bag", new ConcurrentBagStrategy(_client)),
             ("🔧 Batch Processing", new BatchProcessingStrategy(_client, 10)),
+            
         ];
         StrategyBox.ItemsSource = _strategies.Select(s => s.name);
         StrategyBox.SelectedIndex = 1;
@@ -56,13 +59,27 @@ public partial class MainWindow : Window
 
     private void UpdateThreadPoolStatus()
     {
-        ThreadPool.GetMinThreads(out int minWorker, out int minIO);
-        ThreadPool.GetMaxThreads(out int maxWorker, out int maxIO);
-        ThreadPool.GetAvailableThreads(out int availWorker, out int availIO);
+        // Ensure we're on the UI thread
+        if (!Dispatcher.CheckAccess())
+        {
+            Dispatcher.Invoke(UpdateThreadPoolStatus);
+            return;
+        }
 
-        ThreadPoolStatus.Text = $"Current: MinWorker={minWorker}, MinIO={minIO}, MaxWorker={maxWorker}, MaxIO={maxIO}\n" +
-                               $"Available: Worker={availWorker}, IO={availIO}\n" +
-                               $"Logical Processors: {Environment.ProcessorCount}";
+        try
+        {
+            ThreadPool.GetMinThreads(out int minWorker, out int minIO);
+            ThreadPool.GetMaxThreads(out int maxWorker, out int maxIO);
+            ThreadPool.GetAvailableThreads(out int availWorker, out int availIO);
+
+            ThreadPoolStatus.Text = $"Current: MinWorker={minWorker}, MinIO={minIO}, MaxWorker={maxWorker}, MaxIO={maxIO}\n" +
+                                   $"Available: Worker={availWorker}, IO={availIO}\n" +
+                                   $"Logical Processors: {Environment.ProcessorCount}";
+        }
+        catch (Exception ex)
+        {
+            ThreadPoolStatus.Text = $"Error updating status: {ex.Message}";
+        }
     }
 
     private static string[] ParsePokemonIds(string input)
@@ -112,6 +129,8 @@ public partial class MainWindow : Window
             _cts?.Cancel();
             _cts = new CancellationTokenSource();
             var ct = _cts.Token;
+            
+            // Ensure status update is on UI thread
             StatusText.Text = "Fetching...";
             ResultsView.ItemsSource = null;
 
@@ -152,6 +171,7 @@ public partial class MainWindow : Window
                          $"ThreadPool: Used {availBefore - availAfter} threads (Avail: {availBefore}→{availAfter})\n" +
                          $"Contention Events: {Interlocked.Read(ref _contentionCounter)}";
 
+            // Ensure status update is on UI thread
             StatusText.Text = metrics;
 
             // Reset contador de contenção
@@ -162,7 +182,8 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            StatusText.Text = ex.Message;
+            // Ensure error message is displayed on UI thread
+            StatusText.Text = $"Error: {ex.Message}";
         }
     }
 

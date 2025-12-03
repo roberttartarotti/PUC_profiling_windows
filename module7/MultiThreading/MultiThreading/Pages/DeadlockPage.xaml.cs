@@ -36,7 +36,7 @@ namespace MultiThreading
         {
             if (_threadsInDeadlock > 0)
             {
-                StatusText.Text = $"🚨 DEADLOCK DETECTADO! {_threadsInDeadlock} threads em ciclo de dependência";
+                StatusText.Text = $"DEADLOCK DETECTADO! {_threadsInDeadlock} threads em ciclo de dependência";
             }
             else
             {

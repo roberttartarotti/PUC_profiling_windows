@@ -16,7 +16,7 @@ Identificar e documentar gargalos de escalabilidade usando ferramentas de profil
 
 2. **Execução Sequencial**
    - Selecione "Sequential" strategy
-   - Abra Debug -> Performance Profiler -> CPU Usage
+   - Abra Debug -> Performance Profiler -> .Net Counters
    - Marque "Show Threads"
    - Click "Start" no profiler
    - Click "Fetch" no aplicativo
@@ -24,9 +24,9 @@ Identificar e documentar gargalos de escalabilidade usando ferramentas de profil
    - Click "Stop Collection"
 
 3. **Análise - Responda:**
-   - Quantos núcleos foram utilizados? ___________
-   - Qual a % de utilização total da CPU? ___________
-   - Tempo de execução: ___________ ms
+   - Quantos núcleos foram utilizados? ___1-2________
+   - Qual a % de utilização total da CPU? __10%_________
+   - Tempo de execução: ____5842_______ ms
    - Speedup teórico possível (ProcessorCount ÷ tempo): ___________
 
 4. **Execução Paralela - Load Balance**
