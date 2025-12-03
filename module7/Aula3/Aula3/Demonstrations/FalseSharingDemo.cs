@@ -1,298 +1,415 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Collections.Concurrent;
+using System.Runtime.CompilerServices;
 using Aula3.Utilities;
 
 namespace Aula3.Demonstrations;
 
 /// <summary>
-/// Demonstra o problema de False Sharing - O Gargalo Fantasma - VERSÃO EXTREMA
+/// Demonstra o problema de False Sharing - O Gargalo Fantasma - VERSÃO ULTRA EXTREMA
 /// Slide 5: Variáveis diferentes na mesma linha de cache causando invalidação constante
-/// CONFIGURADA PARA TORNAR O CACHE PING-PONG EXTREMAMENTE VISÍVEL
+/// CONFIGURADA PARA FORÇAR CACHE PING-PONG MÁXIMO E LOAD_BLOCKS.STORE_FORWARD VISÍVEL
 /// </summary>
 public static class FalseSharingDemo
 {
     private const int CacheLineSize = 64; // 64 bytes típico em x86/x64
-    private const int ExtremeIterations = 100_000_000; // 100M para tornar visível
+    private const int UltraExtremeIterations = 1_000_000_000; // 1 BILHÃO para forçar visibilidade
+    private const int IntenseLoopCount = 1000; // Loop interno intensivo
     private static readonly ConcurrentQueue<string> _profilerHints = new();
 
     public static void RunDemo()
     {
         using var demoRegion = ProfilingMarkers.CreateScenarioRegion("FalseSharingDemo", 
-            "Demonstração completa de false sharing: problemas vs soluções otimizadas");
+            "Demonstração ULTRA EXTREMA de false sharing: forçando LOAD_BLOCKS.STORE_FORWARD visível");
 
-        Console.WriteLine("\n=== DEMONSTRAÇÃO: FALSE SHARING - O GARGALO FANTASMA ===");
-        Console.WriteLine("VERSÃO EXTREMA - CONFIGURADA PARA MOSTRAR CACHE LINE PING-PONG");
+        Console.WriteLine("\n=== DEMONSTRAÇÃO: FALSE SHARING - VERSÃO ULTRA EXTREMA ===");
+        Console.WriteLine("CONFIGURADA PARA FORÇAR LOAD_BLOCKS.STORE_FORWARD MASSIVO");
         Console.WriteLine($"Tamanho típico da linha de cache: {CacheLineSize} bytes");
-        Console.WriteLine($"Iterações por teste: {ExtremeIterations:N0} (500 milhões!)\n");
+        Console.WriteLine($"Iterações por teste: {UltraExtremeIterations:N0} (1 BILHÃO!)");
+        Console.WriteLine($"Loop interno intensivo: {IntenseLoopCount} ops por iteração\n");
 
         ShowFalseSharingProfilingInstructions();
 
-        // Cenário 1: FALSE SHARING EXTREMO - máximo ping-pong possível
-        Console.WriteLine("--- Cenário 1: FALSE SHARING EXTREMO (Cache Line Ping-Pong) ---");
-        RunExtremeFalseSharingArray();
+        // Cenário 1: FALSE SHARING ULTRA EXTREMO - máximo ping-pong possível
+        Console.WriteLine("--- Cenário 1: FALSE SHARING ULTRA EXTREMO (Cache Thrashing Máximo) ---");
+        RunUltraExtremeFalseSharingArray();
 
-        // Cenário 2: False Sharing com estruturas
-        Console.WriteLine("\n--- Cenário 2: FALSE SHARING em Estruturas (Pior Caso) ---");
-        RunFalseSharingStructures();
+        // Cenário 2: Cross-Core Cache Bouncing Forçado
+        Console.WriteLine("\n--- Cenário 2: CROSS-CORE CACHE BOUNCING FORÇADO ---");
+        RunCrossCoreCacheBouncing();
 
-        // Cenário 3: Solução com Padding
-        Console.WriteLine("\n--- Cenário 3: SOLUÇÃO com Padding (Cache Line Separado) ---");
-        RunPaddedSolution();
+        // Cenário 3: Write-Intensive com Memory Barriers
+        Console.WriteLine("\n--- Cenário 3: WRITE-INTENSIVE + MEMORY BARRIERS ---");
+        RunWriteIntensiveWithBarriers();
 
-        // Cenário 4: Solução com ThreadLocal
-        Console.WriteLine("\n--- Cenário 4: SOLUÇÃO com ThreadLocal (Zero Contenção) ---");
-        RunThreadLocalSolution();
+        // Cenário 4: Solução com Padding (para comparação)
+        Console.WriteLine("\n--- Cenário 4: SOLUÇÃO com Padding (Comparação) ---");
+        RunUltraPaddedSolution();
 
-        ShowFalseSharingAnalysis();
+        ShowUltraFalseSharingAnalysis();
     }
 
     private static void ShowFalseSharingProfilingInstructions()
     {
-        ProfilingMarkers.BeginScenario("FalseSharingInstructions", "Instruções para capturar false sharing no profiler");
+        ProfilingMarkers.BeginScenario("FalseSharingInstructions", "Instruções para capturar false sharing extremo no profiler");
         
-        Console.WriteLine("CONFIGURAÇÃO PARA CAPTURAR FALSE SHARING:");
-        Console.WriteLine("1. Intel VTune (IDEAL): 'Memory Access' analysis");
-        Console.WriteLine("   - Procure por 'LOAD_BLOCKS.STORE_FORWARD' alto");
-        Console.WriteLine("   - 'False Sharing' analysis");
-        Console.WriteLine("2. Visual Studio: CPU Usage + Memory Usage");
-        Console.WriteLine("   - Compare performance entre cenários");
-        Console.WriteLine("3. PerfView: ETW events para cache misses");
-        Console.WriteLine("4. Procure por:");
-        Console.WriteLine("   - Performance degradando com mais threads");
-        Console.WriteLine("   - Cache miss rate alto");
-        Console.WriteLine("   - Threads competindo por mesma memória");
+        Console.WriteLine("CONFIGURAÇÃO PARA CAPTURAR FALSE SHARING EXTREMO:");
+        Console.WriteLine("1. Intel VTune (ESSENCIAL):");
+        Console.WriteLine("   - Collection: 'Memory Access' ou 'microarchitecture'");
+        Console.WriteLine("   - Procure por: 'LOAD_BLOCKS.STORE_FORWARD' > 15%");
+        Console.WriteLine("   - Métrica: 'MEM_LOAD_L3_MISS_RETIRED.REMOTE_HITM'");
+        Console.WriteLine("   - False Sharing: 'OFFCORE_RESPONSE.DEMAND_RFO.L3_MISS.REMOTE_HITM'");
+        
+        Console.WriteLine("\n2. Windows Performance Monitor (PerfMon):");
+        Console.WriteLine("   - Processor\\% Processor Time (deve ser alto)");
+        Console.WriteLine("   - Memory\\Cache Faults/sec");
+        Console.WriteLine("   - Memory\\Page Faults/sec");
+        
+        Console.WriteLine("\n3. Sinais de FALSE SHARING EXTREMO esperados:");
+        Console.WriteLine("   - CPU 100% mas throughput baixo");
+        Console.WriteLine("   - Cache miss ratio > 50%");
+        Console.WriteLine("   - Memory bandwidth saturado");
+        Console.WriteLine("   - Performance PIORA dramaticamente com threads");
+        
         Console.WriteLine();
-        Console.WriteLine("ATENÇÃO: Cada teste levará 30+ segundos!");
-        Console.WriteLine("Pressione ENTER para iniciar...");
+        Console.WriteLine("ATENÇÃO: CADA TESTE LEVARÁ 2-5 MINUTOS!");
+        Console.WriteLine("Sistema pode ficar temporariamente lento!");
+        Console.WriteLine("Pressione ENTER para iniciar os testes extremos...");
         Console.ReadKey();
         Console.WriteLine();
         
         ProfilingMarkers.EndScenario("FalseSharingInstructions");
     }
 
-    private static void RunExtremeFalseSharingArray()
+    private static void RunUltraExtremeFalseSharingArray()
     {
-        int threadCount = Math.Min(Environment.ProcessorCount, 8); // Limita para ter controle
+        // Força exatamente 2 threads em núcleos diferentes para maximizar bouncing
+        int threadCount = 2;
         
-        using var scenarioRegion = ProfilingMarkers.CreateScenarioRegion("ExtremeFalseSharing", 
-            $"False sharing extremo: {threadCount} threads modificando array adjacente");
+        using var scenarioRegion = ProfilingMarkers.CreateScenarioRegion("UltraExtremeFalseSharing", 
+            $"False sharing ULTRA extremo: {threadCount} threads causando cache thrashing máximo");
         
-        Console.WriteLine($"FALSE SHARING EXTREMO:");
-        Console.WriteLine($"   - {threadCount} threads em {threadCount} núcleos");
-        Console.WriteLine($"   - Array de int[{threadCount}] - TODOS na mesma cache line!");
-        Console.WriteLine($"   - {ExtremeIterations:N0} incrementos por thread");
-        Console.WriteLine($"   - Esperado: CACHE LINE PING-PONG massivo");
+        Console.WriteLine($"FALSE SHARING ULTRA EXTREMO:");
+        Console.WriteLine($"   - {threadCount} threads forçadas em núcleos diferentes");
+        Console.WriteLine($"   - Array de byte[2] - AMBOS na mesma cache line!");
+        Console.WriteLine($"   - {UltraExtremeIterations:N0} iterações x {IntenseLoopCount} ops = {(long)UltraExtremeIterations * IntenseLoopCount:N0} operações");
+        Console.WriteLine($"   - Cada thread modifica byte adjacente continuamente");
+        Console.WriteLine($"   - ESPERADO: Cache line ping-pong extremo entre núcleos");
 
-        // Array propositalmente pequeno para forçar false sharing
-        var counters = new int[threadCount]; // int = 4 bytes, 16 ints cabem em 64 bytes
+        // Array minúsculo para garantir false sharing
+        var sharedBytes = new byte[2]; // Apenas 2 bytes, sempre na mesma cache line
         var stopwatch = Stopwatch.StartNew();
 
         var tasks = new Task[threadCount];
         for (int i = 0; i < threadCount; i++)
         {
             int threadIndex = i;
-            tasks[i] = Task.Run(() => ExtremeIncrementWork(threadIndex, counters, threadIndex));
+            tasks[i] = Task.Run(() => UltraIntensiveWork(threadIndex, sharedBytes, threadIndex));
         }
 
-        // Monitora progresso em tempo real
-        var monitorTask = Task.Run(() => MonitorFalseSharingProgress(counters, stopwatch, "ExtremeFalseSharing"));
+        // Monitor com mais frequência
+        var monitorTask = Task.Run(() => MonitorUltraProgress(sharedBytes, stopwatch, "UltraExtremeFalseSharing"));
 
         Task.WaitAll(tasks);
         stopwatch.Stop();
 
-        ShowFalseSharingResults("FALSE SHARING EXTREMO", threadCount, stopwatch.ElapsedMilliseconds, 
-                               counters.Sum(), counters);
+        var totalOps = (long)UltraExtremeIterations * IntenseLoopCount * threadCount;
+        ShowUltraResults("FALSE SHARING ULTRA EXTREMO", threadCount, stopwatch.ElapsedMilliseconds, totalOps, sharedBytes);
         
-        Console.WriteLine("\nNO PROFILER (VTune):");
-        Console.WriteLine("   - Memory Access: LOAD_BLOCKS.STORE_FORWARD > 10%");
-        Console.WriteLine("   - False Sharing analysis mostra contenção");
-        Console.WriteLine("   - Bandwidth utilization alto com baixo throughput");
+        Console.WriteLine("\nEXPECTATIVAS NO PROFILER:");
+        Console.WriteLine("   - VTune: LOAD_BLOCKS.STORE_FORWARD > 20%");
+        Console.WriteLine("   - Memory Access: HITM events altíssimos");
+        Console.WriteLine("   - CPU utilization 100% mas throughput ridículo");
+        Console.WriteLine("   - Cache miss rate > 70%");
     }
 
-    private static void RunFalseSharingStructures()
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void UltraIntensiveWork(int threadId, byte[] sharedArray, int index)
     {
-        using var scenarioRegion = ProfilingMarkers.CreateScenarioRegion("FalseSharingStructures", 
-            "False sharing em estruturas: múltiplas estruturas por cache line");
+        var random = new Random(threadId); // Para evitar otimizações do compilador
         
-        Console.WriteLine("FALSE SHARING em ESTRUTURAS (Pior Caso):");
-        Console.WriteLine("   - Estruturas pequenas em array");
-        Console.WriteLine("   - Múltiplas estruturas por cache line");
-        Console.WriteLine("   - Threads diferentes modificando estruturas adjacentes");
-
-        int structCount = Environment.ProcessorCount;
-        
-        var sharedStructs = new SharedCounter[structCount];
-        for (int i = 0; i < structCount; i++)
+        for (int i = 0; i < UltraExtremeIterations; i++)
         {
-            sharedStructs[i] = new SharedCounter();
-        }
-
-        var stopwatch = Stopwatch.StartNew();
-
-        var tasks = new Task[structCount];
-        for (int i = 0; i < structCount; i++)
-        {
-            int structIndex = i;
-            tasks[i] = Task.Run(() => ExtremeStructWork(structIndex, sharedStructs[structIndex]));
-        }
-
-        Task.WaitAll(tasks);
-        stopwatch.Stop();
-
-        var totalValue = sharedStructs.Sum(s => s.Value);
-        
-        ShowFalseSharingResults("STRUCT FALSE SHARING", structCount, stopwatch.ElapsedMilliseconds, totalValue, null);
-    }
-
-    private static void RunPaddedSolution()
-    {
-        using var scenarioRegion = ProfilingMarkers.CreateScenarioRegion("PaddedSolution", 
-            "Solução com padding: cada contador em cache line separada");
-        
-        Console.WriteLine("SOLUÇÃO COM PADDING:");
-        Console.WriteLine("   - Cada contador em sua própria cache line (64 bytes)");
-        Console.WriteLine("   - Elimina ping-pong entre núcleos");
-
-        int threadCount = Math.Min(Environment.ProcessorCount, 8);
-        
-        var paddedCounters = new PaddedCounter[threadCount];
-        for (int i = 0; i < threadCount; i++)
-        {
-            paddedCounters[i] = new PaddedCounter();
-        }
-
-        var stopwatch = Stopwatch.StartNew();
-
-        var tasks = new Task[threadCount];
-        for (int i = 0; i < threadCount; i++)
-        {
-            int threadIndex = i;
-            tasks[i] = Task.Run(() => ExtremePaddedWork(threadIndex, paddedCounters[threadIndex]));
-        }
-
-        Task.WaitAll(tasks);
-        stopwatch.Stop();
-
-        var totalValue = paddedCounters.Sum(c => c.Value);
-        
-        ShowFalseSharingResults("PADDED SOLUTION", threadCount, stopwatch.ElapsedMilliseconds, totalValue, null);
-
-        Console.WriteLine($"\nTamanho de cada PaddedCounter: {Marshal.SizeOf<PaddedCounter>()} bytes");
-        Console.WriteLine("NO PROFILER: Deve ser SIGNIFICATIVAMENTE mais rápido");
-    }
-
-    private static void RunThreadLocalSolution()
-    {
-        using var scenarioRegion = ProfilingMarkers.CreateScenarioRegion("ThreadLocalSolution", 
-            "Solução ThreadLocal: zero contenção entre threads");
-        
-        Console.WriteLine("SOLUÇÃO COM ThreadLocal:");
-        Console.WriteLine("   - Cada thread tem sua própria variável");
-        Console.WriteLine("   - ZERO contenção de cache");
-
-        int threadCount = Math.Min(Environment.ProcessorCount, 8);
-        
-        var threadLocalCounters = new ThreadLocal<int>(() => 0);
-        var results = new ConcurrentBag<int>();
-
-        var stopwatch = Stopwatch.StartNew();
-
-        var tasks = new Task[threadCount];
-        for (int i = 0; i < threadCount; i++)
-        {
-            int threadIndex = i;
-            tasks[i] = Task.Run(() =>
+            // Loop interno intensivo para maximizar cache pressure
+            for (int inner = 0; inner < IntenseLoopCount; inner++)
             {
-                ExtremeThreadLocalWork(threadIndex, threadLocalCounters);
-                results.Add(threadLocalCounters.Value);
-            });
+                // Força modificação constante do mesmo byte
+                sharedArray[index]++;
+                
+                // Força flush da cache line ocasionalmente
+                if (inner % 100 == 0)
+                {
+                    Thread.MemoryBarrier(); // Força sincronização de memória
+                }
+                
+                // Operação dummy para evitar otimização
+                var dummy = random.Next(1, 3);
+                sharedArray[index] = (byte)(sharedArray[index] + dummy - dummy);
+            }
+            
+            // Força yield ocasional para permitir context switching
+            if (i % 10000 == 0)
+            {
+                Thread.Yield();
+            }
+        }
+    }
+
+    private static void RunCrossCoreCacheBouncing()
+    {
+        using var scenarioRegion = ProfilingMarkers.CreateScenarioRegion("CrossCoreCacheBouncing", 
+            "Forçando cache bouncing entre núcleos específicos");
+        
+        Console.WriteLine("CROSS-CORE CACHE BOUNCING FORÇADO:");
+        Console.WriteLine("   - Threads alternando acesso ao mesmo endereço");
+        Console.WriteLine("   - Simula pior caso de cache coherency protocol");
+        Console.WriteLine("   - MESI state transitions forçadas: Modified -> Shared -> Invalid");
+
+        var sharedCounter = new SharedAtomicCounter();
+        var threadCount = Math.Min(Environment.ProcessorCount, 4);
+        var reducedIterations = UltraExtremeIterations / 10; // Reduz um pouco para não travar o sistema
+
+        var stopwatch = Stopwatch.StartNew();
+
+        var tasks = new Task[threadCount];
+        for (int i = 0; i < threadCount; i++)
+        {
+            int threadIndex = i;
+            tasks[i] = Task.Run(() => CrossCoreBounceWork(threadIndex, sharedCounter, reducedIterations));
         }
 
         Task.WaitAll(tasks);
         stopwatch.Stop();
 
-        var totalValue = results.Sum();
+        var totalOps = (long)reducedIterations * threadCount;
+        Console.WriteLine($"\nRESULTADOS CROSS-CORE BOUNCING:");
+        Console.WriteLine($"   Threads: {threadCount}");
+        Console.WriteLine($"   Tempo: {stopwatch.ElapsedMilliseconds:N0} ms");
+        Console.WriteLine($"   Total operações: {totalOps:N0}");
+        Console.WriteLine($"   Valor final: {sharedCounter.Value:N0}");
+        Console.WriteLine($"   Throughput: {totalOps / (stopwatch.ElapsedMilliseconds / 1000.0):N0} ops/s");
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void CrossCoreBounceWork(int threadId, SharedAtomicCounter counter, int iterations)
+    {
+        for (int i = 0; i < iterations; i++)
+        {
+            // Força operação atômica que invalida cache em outros núcleos
+            counter.Increment();
+            
+            // Força leitura que pode causar cache miss
+            var currentValue = counter.Value;
+            
+            // Força write que invalida cache line em outros núcleos
+            counter.Add(1);
+            
+            // Memory barrier ocasional para forçar sincronização
+            if (i % 1000 == 0)
+            {
+                Thread.MemoryBarrier();
+            }
+        }
+    }
+
+    private static void RunWriteIntensiveWithBarriers()
+    {
+        using var scenarioRegion = ProfilingMarkers.CreateScenarioRegion("WriteIntensiveWithBarriers", 
+            "Write-intensive operations com memory barriers forçados");
         
-        ShowFalseSharingResults("THREADLOCAL SOLUTION", threadCount, stopwatch.ElapsedMilliseconds, totalValue, null);
+        Console.WriteLine("WRITE-INTENSIVE + MEMORY BARRIERS:");
+        Console.WriteLine("   - Operações de escrita intensivas");
+        Console.WriteLine("   - Memory barriers forçados");
+        Console.WriteLine("   - Invalidação de cache line garantida");
 
-        threadLocalCounters.Dispose();
+        var sharedData = new IntenseWriteData();
+        var threadCount = Environment.ProcessorCount;
+        var reducedIterations = UltraExtremeIterations / 20;
+
+        var stopwatch = Stopwatch.StartNew();
+
+        var tasks = new Task[threadCount];
+        for (int i = 0; i < threadCount; i++)
+        {
+            int threadIndex = i;
+            tasks[i] = Task.Run(() => IntenseWriteWork(threadIndex, sharedData, reducedIterations));
+        }
+
+        Task.WaitAll(tasks);
+        stopwatch.Stop();
+
+        var totalOps = (long)reducedIterations * threadCount * 5; // 5 operações por iteração
+        Console.WriteLine($"\nRESULTADOS WRITE-INTENSIVE:");
+        Console.WriteLine($"   Threads: {threadCount}");
+        Console.WriteLine($"   Tempo: {stopwatch.ElapsedMilliseconds:N0} ms");
+        Console.WriteLine($"   Total operações: {totalOps:N0}");
+        Console.WriteLine($"   Throughput: {totalOps / (stopwatch.ElapsedMilliseconds / 1000.0):N0} ops/s");
+        Console.WriteLine($"   Dados finais: A={sharedData.ValueA}, B={sharedData.ValueB}, C={sharedData.ValueC}");
     }
 
-    private static void ExtremeIncrementWork(int threadId, int[] counters, int index)
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void IntenseWriteWork(int threadId, IntenseWriteData data, int iterations)
     {
-
-        for (int i = 0; i < ExtremeIterations; i++)
+        for (int i = 0; i < iterations; i++)
         {
-            // PROPOSITALMENTE CAUSA FALSE SHARING
-            counters[index]++; // Modifica posição específica do array
+            // Múltiplas escritas na mesma cache line
+            data.ValueA++;
+            Thread.MemoryBarrier(); // Força sincronização
+            
+            data.ValueB++;
+            Thread.MemoryBarrier(); // Força sincronização
+            
+            data.ValueC++;
+            Thread.MemoryBarrier(); // Força sincronização
+            
+            // Operações adicionais para intensificar
+            data.ValueA += threadId;
+            data.ValueB -= threadId;
         }
     }
 
-    private static void ExtremeStructWork(int threadId, SharedCounter counter)
+    private static void RunUltraPaddedSolution()
     {
-        for (int i = 0; i < ExtremeIterations; i++)
+        using var scenarioRegion = ProfilingMarkers.CreateScenarioRegion("UltraPaddedSolution", 
+            "Solução ultra padded para comparação de performance");
+        
+        Console.WriteLine("SOLUÇÃO ULTRA PADDED (Comparação):");
+        Console.WriteLine("   - Cada valor em cache line separada");
+        Console.WriteLine("   - Deve ser DRAMATICAMENTE mais rápido");
+
+        var threadCount = 2;
+        var paddedData = new UltraPaddedData[threadCount];
+        for (int i = 0; i < threadCount; i++)
         {
-            counter.Increment();
+            paddedData[i] = new UltraPaddedData();
+        }
+
+        var stopwatch = Stopwatch.StartNew();
+
+        var tasks = new Task[threadCount];
+        for (int i = 0; i < threadCount; i++)
+        {
+            int threadIndex = i;
+            tasks[i] = Task.Run(() => UltraPaddedWork(threadIndex, paddedData[threadIndex]));
+        }
+
+        Task.WaitAll(tasks);
+        stopwatch.Stop();
+
+        var totalOps = (long)UltraExtremeIterations * IntenseLoopCount * threadCount;
+        var totalValue = paddedData.Sum(d => d.Value);
+        
+        Console.WriteLine($"\nRESULTADOS PADDED SOLUTION:");
+        Console.WriteLine($"   Threads: {threadCount}");
+        Console.WriteLine($"   Tempo: {stopwatch.ElapsedMilliseconds:N0} ms");
+        Console.WriteLine($"   Total operações: {totalOps:N0}");
+        Console.WriteLine($"   Total valor: {totalValue:N0}");
+        Console.WriteLine($"   Throughput: {totalOps / (stopwatch.ElapsedMilliseconds / 1000.0):N0} ops/s");
+        Console.WriteLine($"   Tamanho UltraPaddedData: {Marshal.SizeOf<UltraPaddedData>()} bytes");
+    }
+
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static void UltraPaddedWork(int threadId, UltraPaddedData data)
+    {
+        for (int i = 0; i < UltraExtremeIterations; i++)
+        {
+            for (int inner = 0; inner < IntenseLoopCount; inner++)
+            {
+                data.Increment();
+            }
         }
     }
 
-    private static void ExtremePaddedWork(int threadId, PaddedCounter counter)
-    {
-        for (int i = 0; i < ExtremeIterations; i++)
-        {
-            counter.Increment();
-        }
-    }
-
-    private static void ExtremeThreadLocalWork(int threadId, ThreadLocal<int> threadLocalCounter)
-    {
-        for (int i = 0; i < ExtremeIterations; i++)
-        {
-            threadLocalCounter.Value++;
-        }
-    }
-
-    private static void MonitorFalseSharingProgress(int[] counters, Stopwatch stopwatch, string scenarioName)
+    private static void MonitorUltraProgress(byte[] sharedData, Stopwatch stopwatch, string scenarioName)
     {
         using var monitorRegion = ProfilingMarkers.CreateScenarioRegion($"{scenarioName}_Monitoring", 
-            "Monitoramento em tempo real do progresso com false sharing");
+            "Monitoramento ultra intensivo do progresso");
 
-        int checkpointCount = 0;
         while (stopwatch.IsRunning)
         {
-            var currentSum = counters.Sum();
-            var progressPercent = (double)currentSum / (ExtremeIterations * counters.Length) * 100;
+            var dataSum = sharedData.Sum(b => (int)b);
             
             Console.WriteLine($"[{stopwatch.ElapsedMilliseconds/1000}s] " +
-                            $"Progresso: {progressPercent:F1}% " +
-                            $"Total: {currentSum:N0}");
+                            $"Dados compartilhados: [{sharedData[0]}, {sharedData[1]}] " +
+                            $"Soma: {dataSum}");
             
-            if (progressPercent >= 99.0) break;
-            Thread.Sleep(3000);
+            Thread.Sleep(2000); // Check mais frequente
         }
     }
 
-    private static void ShowFalseSharingResults(string scenario, int threadCount, long elapsedMs, long totalValue, int[]? counters)
+    private static void ShowUltraResults(string scenario, int threadCount, long elapsedMs, long totalOps, byte[] data)
     {
-        var throughput = totalValue / (elapsedMs / 1000.0);
+        var throughput = totalOps / Math.Max(elapsedMs / 1000.0, 0.001);
         
-        ProfilingMarkers.BeginScenario($"{scenario.Replace(" ", "")}_Results", $"Apresentando resultados: {scenario}");
+        ProfilingMarkers.BeginScenario($"{scenario.Replace(" ", "")}_Results", $"Resultados ultra: {scenario}");
         
         Console.WriteLine($"\nRESULTADOS {scenario}:");
         Console.WriteLine($"   Threads: {threadCount}");
-        Console.WriteLine($"   Tempo: {elapsedMs:N0} ms");
-        Console.WriteLine($"   Total incrementos: {totalValue:N0}");
+        Console.WriteLine($"   Tempo TOTAL: {elapsedMs:N0} ms ({elapsedMs/1000.0:F1}s)");
+        Console.WriteLine($"   Total operações: {totalOps:N0}");
         Console.WriteLine($"   Throughput: {throughput:N0} ops/s");
         Console.WriteLine($"   Throughput por thread: {throughput/threadCount:N0} ops/s");
-
-        if (counters != null)
-        {
-            Console.WriteLine($"   Valores por thread: [{string.Join(", ", counters.Select(c => c.ToString("N0")))}]");
-            Console.WriteLine($"   Distribuição de cache: {counters.Length * sizeof(int)} bytes em {Math.Ceiling((double)(counters.Length * sizeof(int)) / CacheLineSize)} cache lines");
-        }
+        Console.WriteLine($"   Dados finais: [{string.Join(", ", data)}]");
+        Console.WriteLine($"   Cache lines ocupadas: {Math.Ceiling((double)data.Length / CacheLineSize)} (TODAS compartilhadas!)");
         
         ProfilingMarkers.EndScenario($"{scenario.Replace(" ", "")}_Results");
+    }
+
+    /// <summary>
+    /// Estrutura para operações atômicas que causam cache bouncing
+    /// </summary>
+    private class SharedAtomicCounter
+    {
+        private volatile int _value = 0;
+        
+        public int Value => _value;
+        
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public void Increment()
+        {
+            Interlocked.Increment(ref _value);
+        }
+        
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public void Add(int value)
+        {
+            Interlocked.Add(ref _value, value);
+        }
+    }
+
+    /// <summary>
+    /// Dados para write-intensive operations
+    /// </summary>
+    private class IntenseWriteData
+    {
+        public volatile int ValueA = 0;
+        public volatile int ValueB = 0;  
+        public volatile int ValueC = 0;
+        // Propositalmente na mesma cache line para false sharing
+    }
+
+    /// <summary>
+    /// Dados com padding ultra agressivo
+    /// </summary>
+    [StructLayout(LayoutKind.Explicit, Size = 256)] // 4 cache lines de separação
+    private struct UltraPaddedData
+    {
+        [FieldOffset(0)]
+        private long _value;
+        
+        // Padding massivo
+        [FieldOffset(64)]  private long _pad1;
+        [FieldOffset(128)] private long _pad2;
+        [FieldOffset(192)] private long _pad3;
+
+        public long Value => _value;
+
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        public void Increment()
+        {
+            _value++;
+        }
     }
 
     /// <summary>
@@ -336,61 +453,67 @@ public static class FalseSharingDemo
         }
     }
 
-    private static void ShowFalseSharingAnalysis()
+    private static void ShowUltraFalseSharingAnalysis()
     {
-        Console.WriteLine("\n" + new string('=', 80));
-        Console.WriteLine("GUIA DE ANÁLISE - FALSE SHARING NO PROFILER");
-        Console.WriteLine(new string('=', 80));
+        Console.WriteLine("\n" + new string('=', 90));
+        Console.WriteLine("ANÁLISE ULTRA EXTREMA - FALSE SHARING MÁXIMO");
+        Console.WriteLine(new string('=', 90));
         
-        Console.WriteLine("\nINTEL VTUNE (FERRAMENTA IDEAL):");
-        Console.WriteLine("1. MEMORY ACCESS ANALYSIS:");
-        Console.WriteLine("   - Execute: vtune -collect memory-access");
-        Console.WriteLine("   - Procure: 'LOAD_BLOCKS.STORE_FORWARD' > 5%");
-        Console.WriteLine("   - Métrica: 'False Sharing' diretamente reportada");
+        Console.WriteLine("\nCONFIGURAÇÃO PARA CAPTURAR LOAD_BLOCKS.STORE_FORWARD:");
+        Console.WriteLine("\n1. INTEL VTUNE (OBRIGATÓRIO para métricas precisas):");
+        Console.WriteLine("   Comando: vtune -collect memory-access -result-dir vtune_results ./Aula3.exe");
+        Console.WriteLine("   MÉTRICAS CHAVE:");
+        Console.WriteLine("   • LOAD_BLOCKS.STORE_FORWARD: > 20% (CRÍTICO)");
+        Console.WriteLine("   • MEM_LOAD_L3_MISS_RETIRED.REMOTE_HITM: > 15%");
+        Console.WriteLine("   • OFFCORE_RESPONSE.DEMAND_RFO.L3_MISS.REMOTE_HITM: > 10%");
+        Console.WriteLine("   • Memory Bandwidth Utilization: > 80% com baixo throughput");
         
-        Console.WriteLine("\n2. CACHE MISS ANALYSIS:");
-        Console.WriteLine("   - L1 cache miss rate alto");
-        Console.WriteLine("   - L2/L3 cache line transfers");
-        Console.WriteLine("   - Memory bandwidth utilization vs throughput");
+        Console.WriteLine("\n2. PERFORMANCE COUNTERS (Windows):");
+        Console.WriteLine("   • Processor(_Total)\\% Processor Time: ~100%");
+        Console.WriteLine("   • Memory\\Cache Faults/sec: > 10,000");
+        Console.WriteLine("   • Memory\\Pages/sec: > 1,000");
+        Console.WriteLine("   • System\\Context Switches/sec: muito alto");
         
-        Console.WriteLine("\nVISUAL STUDIO PROFILER:");
-        Console.WriteLine("1. CPU USAGE + MEMORY USAGE:");
-        Console.WriteLine("   - Compare tempos entre cenários");
-        Console.WriteLine("   - False Sharing: Alto CPU, baixo throughput");
-        Console.WriteLine("   - Padded: Mesmo CPU, alto throughput");
+        Console.WriteLine("\n3. VISUAL STUDIO DIAGNOSTIC TOOLS:");
+        Console.WriteLine("   • CPU Usage: 100% mas throughput baixíssimo");
+        Console.WriteLine("   • Memory Usage: padrão de acesso errático");
+        Console.WriteLine("   • Timeline: threads em constante contenção");
         
-        Console.WriteLine("\n2. TIMELINE ANALYSIS:");
-        Console.WriteLine("   - Threads com atividade sincronizada (suspeito)");
-        Console.WriteLine("   - Padrão de 'stop-and-go' entre threads");
+        Console.WriteLine("\nSINAIS INEQUÍVOCOS DE FALSE SHARING EXTREMO:");
+        Console.WriteLine("• ??  Performance DESMORONA com threads (anti-scaling)");
+        Console.WriteLine("• ??  Cache miss ratio > 50% sem motivo aparente");
+        Console.WriteLine("• ??  CPU 100% mas operações/segundo ridículas");
+        Console.WriteLine("• ??  Memory bandwidth saturado (>80% utilization)");
+        Console.WriteLine("• ??  LOAD_BLOCKS.STORE_FORWARD > 20% (smoking gun!)");
+        Console.WriteLine("• ??  Diferença DRAMÁTICA com versão padded (10x-100x)");
         
-        Console.WriteLine("\nPERFVIEW (AVANÇADO):");
-        Console.WriteLine("1. ETW EVENTS:");
-        Console.WriteLine("   - Cache miss events");
-        Console.WriteLine("   - Memory access patterns");
-        Console.WriteLine("   - Cross-core memory transfers");
+        Console.WriteLine("\nINTERPRETAÇÃO DOS RESULTADOS:");
+        Console.WriteLine("1. CENÁRIO FALSE SHARING:");
+        Console.WriteLine("   - Deve ser o MAIS LENTO de todos");
+        Console.WriteLine("   - Throughput/thread diminui drasticamente");
+        Console.WriteLine("   - CPU busy mas pouco trabalho útil");
         
-        Console.WriteLine("\nIDENTIFICAÇÃO NO CÓDIGO:");
-        Console.WriteLine("1. ESTRUTURA DE DADOS:");
-        Console.WriteLine("   - Arrays de tipos pequenos (int, bool, byte)");
-        Console.WriteLine("   - Structs < 64 bytes em arrays");
-        Console.WriteLine("   - Campos adjacentes modificados por threads diferentes");
+        Console.WriteLine("\n2. CENÁRIO PADDED:");
+        Console.WriteLine("   - Deve ser 10x-100x MAIS RÁPIDO");
+        Console.WriteLine("   - Throughput/thread linear ou quase");
+        Console.WriteLine("   - CPU eficiente, alto trabalho útil");
         
-        Console.WriteLine("\n2. PADRÃO DE ACESSO:");
-        Console.WriteLine("   - Threads trabalhando em índices adjacentes");
-        Console.WriteLine("   - Modificações frequentes sem sincronização explícita");
-        Console.WriteLine("   - Performance piorando com mais threads (anti-scaling)");
+        Console.WriteLine("\n3. DIFERENÇA ESPERADA:");
+        Console.WriteLine("   - False Sharing: ~1M-10M ops/s");
+        Console.WriteLine("   - Padded Solution: ~100M-1B ops/s");
+        Console.WriteLine("   - Ratio: 10x-100x improvement");
         
-        Console.WriteLine("\nSINAIS DE FALSE SHARING:");
-        Console.WriteLine("• Performance PIORA com mais threads");
-        Console.WriteLine("• Cache miss rate alto sem motivo aparente");
-        Console.WriteLine("• Memory bandwidth alto, CPU efficiency baixa");
-        Console.WriteLine("• Padrão 'saw-tooth' no timeline (stop-and-go)");
-        Console.WriteLine("• Diferença dramática com padding/ThreadLocal");
+        Console.WriteLine("\nCOMANDOS VTUNE ESPECÍFICOS:");
+        Console.WriteLine("# Coleta geral de memory access");
+        Console.WriteLine("vtune -collect memory-access -knob sampling-interval=1 \\");
+        Console.WriteLine("       -result-dir vtune_false_sharing ./Aula3.exe");
         
-        Console.WriteLine("\nSOLUÇÕES TESTADAS:");
-        Console.WriteLine("1. PADDING: Força separação de cache line");
-        Console.WriteLine("2. THREADLOCAL: Elimina compartilhamento");
-        Console.WriteLine("3. ATOMIC OPERATIONS: Interlocked para coordenação");
-        Console.WriteLine("4. REDESIGN: Agregar localmente, sincronizar depois");
+        Console.WriteLine("\n# Análise específica de false sharing"); 
+        Console.WriteLine("vtune -collect memory-consumption -knob analyze-mem-objects=true \\");
+        Console.WriteLine("       -result-dir vtune_memory ./Aula3.exe");
+        
+        Console.WriteLine("\n# Report das métricas críticas");
+        Console.WriteLine("vtune -report summary -result-dir vtune_false_sharing");
+        Console.WriteLine("vtune -report hotspots -group-by=function -result-dir vtune_false_sharing");
     }
 }
