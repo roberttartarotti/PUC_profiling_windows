@@ -99,12 +99,7 @@ Configurações recomendadas para primeira captura:
 
 **B. Interagir com a Aplicação:**
 
-Durante os 10 segundos de captura, na aplicação:
-1. Movimente o mouse (rotaciona a câmera)
-2. Clique nos botões de cenário:
-   - "GPU Bottleneck" (gera shader complexo)
-   - "CPU Bottleneck" (muitos draw calls)
-3. Ajuste o slider de triângulos
+1. Ajuste os sliders e marque os checkboxes
 
 **C. Parar Captura:**
 
