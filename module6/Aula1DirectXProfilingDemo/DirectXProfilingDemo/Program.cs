@@ -1,7 +1,4 @@
-﻿using System;
-using System.Windows.Forms;
-
-namespace DirectXProfilingDemo
+﻿namespace DirectXProfilingDemo
 {
     static class Program
     {
@@ -11,7 +8,7 @@ namespace DirectXProfilingDemo
             // CRÍTICO: Inicializar PIX ANTES de qualquer chamada DirectX
             Console.WriteLine("=== DirectX Profiling Demo ===");
             Console.WriteLine("Inicializando suporte ao PIX...");
-            
+
             bool pixReady = PixHelper.InitializePIX();
             if (pixReady)
             {
@@ -32,17 +29,17 @@ namespace DirectXProfilingDemo
             {
                 Console.WriteLine("Iniciando aplicação DirectX...");
                 var mainForm = new MainForm();
-                
+
                 // Cleanup PIX quando a aplicação fechar
                 mainForm.FormClosed += (s, e) => PixHelper.CleanupPIX();
-                
+
                 System.Windows.Forms.Application.Run(mainForm);
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Erro ao inicializar DirectX:\n{ex.Message}\n\nVerifique se você tem uma placa gráfica compatível com DirectX 11.", 
+                MessageBox.Show($"Erro ao inicializar DirectX:\n{ex.Message}\n\nVerifique se você tem uma placa gráfica compatível com DirectX 11.",
                     "Erro de Inicialização", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                
+
                 PixHelper.CleanupPIX();
             }
         }

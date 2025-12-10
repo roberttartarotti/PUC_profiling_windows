@@ -1,8 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Drawing;
-using System.Reflection.Emit;
-using System.Windows.Forms;
+﻿using System.Diagnostics;
 
 namespace DirectXProfilingDemo
 {
@@ -10,8 +6,8 @@ namespace DirectXProfilingDemo
     {
         private DirectXRenderer renderer;
         private System.Windows.Forms.Timer renderTimer;
-        private PerformanceCounter cpuCounter;
-        private PerformanceCounter gpuCounter;
+        private PerformanceCounter? cpuCounter;
+        private PerformanceCounter? gpuCounter;
 
         // Controles para simular problemas
         private int triangleCount = 1000;
@@ -31,7 +27,6 @@ namespace DirectXProfilingDemo
         {
             InitializeComponent();
             InitializePerformanceCounters();
-            SetupRenderer();
             SetupTimer();
         }
 
@@ -147,8 +142,7 @@ namespace DirectXProfilingDemo
             shaderCheckbox.CheckedChanged += (s, e) =>
             {
                 useComplexShader = shaderCheckbox.Checked;
-                if (renderer != null)
-                    renderer.UseComplexShader = useComplexShader;
+                renderer?.UseComplexShader = useComplexShader;
             };
 
             // Controle: Overdraw
@@ -163,8 +157,7 @@ namespace DirectXProfilingDemo
             overdrawCheckbox.CheckedChanged += (s, e) =>
             {
                 enableOverdraw = overdrawCheckbox.Checked;
-                if (renderer != null)
-                    renderer.EnableOverdraw = enableOverdraw;
+                renderer?.EnableOverdraw = enableOverdraw;
             };
 
             // Controle: Wireframe
@@ -179,8 +172,7 @@ namespace DirectXProfilingDemo
             wireframeCheckbox.CheckedChanged += (s, e) =>
             {
                 enableWireframe = wireframeCheckbox.Checked;
-                if (renderer != null)
-                    renderer.EnableWireframe = enableWireframe;
+                renderer?.EnableWireframe = enableWireframe;
             };
 
             // Controle: Animação
@@ -195,8 +187,7 @@ namespace DirectXProfilingDemo
             animationCheckbox.CheckedChanged += (s, e) =>
             {
                 enableAnimation = animationCheckbox.Checked;
-                if (renderer != null)
-                    renderer.EnableAnimation = enableAnimation;
+                renderer?.EnableAnimation = enableAnimation;
             };
 
             // Controle: Multiplicador de Draw Calls
@@ -220,8 +211,7 @@ namespace DirectXProfilingDemo
             {
                 drawCallMultiplier = drawCallTrackBar.Value;
                 drawCallLabel.Text = $"Multiplicador Draw Calls: {drawCallMultiplier}x";
-                if (renderer != null)
-                    renderer.DrawCallMultiplier = drawCallMultiplier;
+                renderer?.DrawCallMultiplier = drawCallMultiplier;
             };
 
             // Controle: Velocidade de rotação
@@ -249,33 +239,6 @@ namespace DirectXProfilingDemo
                     renderer.RotationSpeed = rotationSpeed;
             };
 
-            // Botões de ação
-            var captureButton = new Button
-            {
-                Text = "CAPTURAR COM PIX (Nota: Rode PIX separadamente)",
-                BackColor = Color.LightGreen,
-                Location = new Point(10, 530),
-                Size = new Size(260, 40),
-                Font = new Font("Segoe UI", 9, FontStyle.Bold)
-            };
-
-            captureButton.Click += (s, e) =>
-            {
-                string pixStatus = PixHelper.IsPixReady ? "✅ PRONTO" : "❌ NÃO DISPONÍVEL";
-                string instructions = PixHelper.IsPixReady 
-                    ? "1. Abra o PIX for Windows como Administrador\n2. Clique em 'Attach to Process'\n3. Selecione 'DirectXProfilingDemo.exe'\n4. Configure os controles para criar cenários específicos\n5. Clique em 'Take GPU Capture' no PIX\n6. Interaja com a aplicação\n7. Pare a captura no PIX para analisar"
-                    : "1. Instale o PIX for Windows da Microsoft Store\n2. Reinicie esta aplicação\n3. O PIX será automaticamente inicializado\n\nAlternativamente, você ainda pode usar:\n- Visual Studio Diagnostic Tools\n- Outras ferramentas de profiling de CPU";
-
-                MessageBox.Show($"Status do PIX: {pixStatus}\n\n{instructions}\n\n" +
-                    "CENÁRIOS DE TESTE:\n" +
-                    "• GPU Bottleneck: Muitos triângulos + Shader Complexo + Overdraw\n" +
-                    "• CPU Bottleneck: Multiplicador de Draw Calls alto\n" +
-                    "• Fillrate Issues: Overdraw habilitado\n" +
-                    "• Baseline: Configurações padrão\n" +
-                    "• Visualização Estática: Animação desabilitada (melhor para análise)",
-                    "Instruções PIX - DirectX Profiling Demo", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            };
-
             var resetButton = new Button
             {
                 Text = "Resetar para Valores Normais",
@@ -296,14 +259,14 @@ namespace DirectXProfilingDemo
             };
 
             // Adicionar controles ao painel
-            controlPanel.Controls.AddRange(new Control[]
-            {
+            controlPanel.Controls.AddRange(
+            [
                 statsLabel, fpsLabel, frameTimeLabel, drawCallsLabel,
                 cpuUsageLabel, gpuUsageLabel, controlsLabel,
                 triangleLabel, triangleTrackBar, shaderCheckbox,
                 overdrawCheckbox, wireframeCheckbox, animationCheckbox, drawCallLabel, drawCallTrackBar,
-                speedLabel, speedTrackBar, captureButton, resetButton
-            });
+                speedLabel, speedTrackBar, resetButton
+            ]);
 
             this.Controls.Add(controlPanel);
 
@@ -319,17 +282,16 @@ namespace DirectXProfilingDemo
             // Salvar referência do painel de renderização
             renderPanel.HandleCreated += (s, e) =>
             {
-                if (renderer == null)
+                renderer ??= new DirectXRenderer(renderPanel.Handle)
                 {
-                    renderer = new DirectXRenderer(renderPanel.Handle);
-                    renderer.UseComplexShader = useComplexShader;
-                    renderer.EnableOverdraw = enableOverdraw;
-                    renderer.EnableWireframe = enableWireframe;
-                    renderer.EnableAnimation = enableAnimation;
-                    renderer.DrawCallMultiplier = drawCallMultiplier;
-                    renderer.RotationSpeed = rotationSpeed;
-                    renderer.TriangleCount = triangleCount;
-                }
+                    UseComplexShader = useComplexShader,
+                    EnableOverdraw = enableOverdraw,
+                    EnableWireframe = enableWireframe,
+                    EnableAnimation = enableAnimation,
+                    DrawCallMultiplier = drawCallMultiplier,
+                    RotationSpeed = rotationSpeed,
+                    TriangleCount = triangleCount
+                };
             };
 
             // Atualizar estatísticas no timer
@@ -355,11 +317,6 @@ namespace DirectXProfilingDemo
                 cpuCounter = null;
                 gpuCounter = null;
             }
-        }
-
-        private void SetupRenderer()
-        {
-            // Renderer será criado quando o handle do painel estiver disponível
         }
 
         private void SetupTimer()

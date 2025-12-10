@@ -1,126 +1,126 @@
-# DirectX Profiling Demo - PIX Integration Guide
+Ôªø# DirectX Profiling Demo - PIX Integration Guide
 
-## ?? Sobre
-Esta aplicaÁ„o demonstra tÈcnicas de profiling DirectX com suporte completo ao **PIX for Windows**. O projeto resolve o problema comum de "WinPixGpuCapturer.dll not loaded" carregando as DLLs **DIRETAMENTE** do diretÛrio de instalaÁ„o do PIX, garantindo compatibilidade de vers„o.
+## Sobre
+Esta aplica√ß√£o demonstra t√©cnicas de profiling DirectX com suporte completo ao **PIX for Windows**. O projeto resolve o problema comum de "WinPixGpuCapturer.dll not loaded" carregando as DLLs **DIRETAMENTE** do diret√≥rio de instala√ß√£o do PIX, garantindo compatibilidade de vers√£o.
 
-## ? Recursos Implementados
+## Recursos Implementados
 
 ### **DirectX Real**
-- ? SharpDX com DirectX 11
-- ? Vertex e Pixel Shaders HLSL
-- ? Geometria din‚mica (tri‚ngulos organizados)
-- ? Pipeline gr·fico completo
+- SharpDX com DirectX 11
+- Vertex e Pixel Shaders HLSL
+- Geometria din√¢mica (tri√¢ngulos organizados)
+- Pipeline gr√°fico completo
 
 ### **PIX Integration**
-- ? Carregamento autom·tico de WinPixGpuCapturer.dll **do diretÛrio PIX**
-- ? Marcadores PIX coloridos por funÁ„o
-- ? Suporte a PIX Events para profiling detalhado
-- ? VerificaÁ„o autom·tica de status do PIX
-- ? **Compatibilidade de vers„o garantida**
+- Carregamento autom√°tico de WinPixGpuCapturer.dll **do diret√≥rio PIX**
+- Marcadores PIX coloridos por fun√ß√£o
+- Suporte a PIX Events para profiling detalhado
+- Verifica√ß√£o autom√°tica de status do PIX
+- **Compatibilidade de vers√£o garantida**
 
 ### **Controles de Performance**
-- ? **Tri‚ngulos**: 100-10,000 (workload de geometria)
-- ? **Shader Complexo**: Pixel shader com loops pesados
-- ? **Overdraw**: 5x renderizaÁ„o (fillrate bottleneck)
-- ? **Draw Calls**: 1-10x multiplicador (CPU bottleneck)
-- ? **Wireframe**: VisualizaÁ„o de geometria
-- ? **AnimaÁ„o**: Altern‚ncia entre visualizaÁ„o est·tica 2D e animada 3D
-- ? **Velocidade**: Controle de animaÁ„o (quando habilitada)
+- **Tri√¢ngulos**: 100-10,000 (workload de geometria)
+- **Shader Complexo**: Pixel shader com loops pesados
+- **Overdraw**: 5x renderiza√ß√£o (fillrate bottleneck)
+- **Draw Calls**: 1-10x multiplicador (CPU bottleneck)
+- **Wireframe**: Visualiza√ß√£o de geometria
+- **Anima√ß√£o**: Altern√¢ncia entre visualiza√ß√£o est√°tica 2D e animada 3D
+- **Velocidade**: Controle de anima√ß√£o (quando habilitada)
 
-## ?? Setup PIX for Windows
+## Setup PIX for Windows
 
 ### **1. Instalar PIX**
 ```
-1. Abra a Microsoft Store
-2. Procure "PIX on Windows"
-3. Instale a ferramenta oficial da Microsoft
+1. Abra a https://devblogs.microsoft.com/pix/download/
+2. Procure "Latest main version"
+3. Baixe e instale conforme a arquitetura de seu processador
 ```
 
-### **2. Verificar InstalaÁ„o**
+### **2. Verificar Instala√ß√£o**
 ```batch
-# Execute o script de verificaÁ„o
+# Execute o script de verifica√ß√£o
 setup_pix.bat
 ```
 
-### **3. ? N√O Copie DLLs (IMPORTANTE!)**
+### **3. N√ÉO Copie DLLs (IMPORTANTE!)**
 ```
-? N√O copie WinPixGpuCapturer.dll para o diretÛrio da aplicaÁ„o
-? A aplicaÁ„o carrega automaticamente do diretÛrio PIX
-? Isso garante compatibilidade de vers„o
+N√ÉO copie WinPixGpuCapturer.dll para o diret√≥rio da aplica√ß√£o
+A aplica√ß√£o carrega automaticamente do diret√≥rio PIX
+Isso garante compatibilidade de vers√£o
 ```
 
-## ?? Como Usar com PIX
+## Como Usar com PIX
 
 ### **Passo a Passo**
-1. **Execute a aplicaÁ„o** - PIX ser· detectado automaticamente
+1. **Execute a aplica√ß√£o** - PIX ser√° detectado automaticamente
    ```bash
    dotnet run
    ```
-2. **Verificar no console**: "? PIX inicializado com sucesso"
+2. **Verificar no console**: "PIX inicializado com sucesso"
 3. **Abra PIX for Windows** como **Administrador**
 4. **Clique em "Attach to Process"** no PIX
 5. **Selecione "DirectXProfilingDemo.exe"** da lista
-6. **? Attach deve funcionar sem erros!**
-7. **Configure cen·rios** usando os controles da aplicaÁ„o
+6. **Attach deve funcionar sem erros!**
+7. **Configure cen√°rios** usando os controles da aplica√ß√£o
 8. **Clique "Take GPU Capture"** no PIX
-9. **Interaja com a aplicaÁ„o** (mude configuraÁıes)
+9. **Interaja com a aplica√ß√£o** (mude configura√ß√µes)
 10. **Pare a captura** no PIX para analisar
 
-### **Cen·rios de Teste Recomendados**
+### **Cen√°rios de Teste Recomendados**
 
-#### **?? Baseline (Performance Normal)**
-- Tri‚ngulos: 1000
+#### **Baseline (Performance Normal)**
+- Tri√¢ngulos: 1000
 - Shader: Simples
 - Overdraw: Desabilitado
 - Draw Calls: 1x
-- AnimaÁ„o: Desabilitada (visualizaÁ„o est·tica)
+- Anima√ß√£o: Desabilitada (visualiza√ß√£o est√°tica)
 
-#### **?? GPU Bottleneck**
-- Tri‚ngulos: 10000
+#### **GPU Bottleneck**
+- Tri√¢ngulos: 10000
 - Shader: **Complexo**
 - Overdraw: **Habilitado**
 - Draw Calls: 1x
-- AnimaÁ„o: Opcional
+- Anima√ß√£o: Opcional
 
-#### **?? CPU Bottleneck**
-- Tri‚ngulos: 5000
+#### **CPU Bottleneck**
+- Tri√¢ngulos: 5000
 - Shader: Simples
 - Overdraw: Desabilitado
 - Draw Calls: **10x**
-- AnimaÁ„o: Habilitada (aumenta CPU load)
+- Anima√ß√£o: Habilitada (aumenta CPU load)
 
-#### **?? Fillrate Issues**
-- Tri‚ngulos: 5000
+#### **Fillrate Issues**
+- Tri√¢ngulos: 5000
 - Shader: Complexo
 - Overdraw: **Habilitado**
 - Draw Calls: 1x
-- AnimaÁ„o: Desabilitada (foco no fillrate)
+- Anima√ß√£o: Desabilitada (foco no fillrate)
 
-#### **?? VisualizaÁ„o Est·tica (Novo!)**
-- Tri‚ngulos: Qualquer quantidade
+#### **Visualiza√ß√£o Est√°tica (Novo!)**
+- Tri√¢ngulos: Qualquer quantidade
 - Shader: Qualquer
-- Overdraw: Conforme necess·rio
-- Draw Calls: Conforme necess·rio
-- AnimaÁ„o: **Desabilitada** (tri‚ngulos est·ticos para an·lise precisa)
+- Overdraw: Conforme necess√°rio
+- Draw Calls: Conforme necess√°rio
+- Anima√ß√£o: **Desabilitada** (tri√¢ngulos est√°ticos para an√°lise precisa)
 
-## ?? PIX Events Implementados
+## PIX Events Implementados
 
-A aplicaÁ„o inclui marcadores PIX coloridos para an·lise detalhada:
+A aplica√ß√£o inclui marcadores PIX coloridos para an√°lise detalhada:
 
-- ?? **Frame Completo**: Verde (0xFF00FF00)
-- ?? **Clear**: Vermelho (0xFFFF0000)  
-- ?? **Setup Pipeline**: Azul (0xFF0000FF)
-- ?? **Update Buffers**: Amarelo (0xFFFFFF00)
-- ?? **Overdraw**: Magenta (0xFFFF00FF)
-- ?? **Draw Calls**: Laranja (0xFFFF8000)
-- ?? **Present**: Ciano (0xFF8000FF)
+- **Frame Completo**: Verde (0xFF00FF00)
+- **Clear**: Vermelho (0xFFFF0000)  
+- **Setup Pipeline**: Azul (0xFF0000FF)
+- **Update Buffers**: Amarelo (0xFFFFFF00)
+- **Overdraw**: Magenta (0xFFFF00FF)
+- **Draw Calls**: Laranja (0xFFFF8000)
+- **Present**: Ciano (0xFF8000FF)
 
-## ?? An·lise no PIX
+## An√°lise no PIX
 
 ### **GPU Timeline**
-- Observe os **marcadores coloridos** por funÁ„o
+- Observe os **marcadores coloridos** por fun√ß√£o
 - Identifique **gargalos** nas diferentes fases
-- Analise **utilizaÁ„o de GPU** por shader
+- Analise **utiliza√ß√£o de GPU** por shader
 
 ### **Draw Calls**
 - Contagem exata de **draw calls** por frame
@@ -128,56 +128,56 @@ A aplicaÁ„o inclui marcadores PIX coloridos para an·lise detalhada:
 - **Recursos utilizados** (buffers, texturas, shaders)
 
 ### **Shaders**
-- **CompilaÁ„o HLSL** com sÌmbolos de debug
-- **An·lise de performance** por shader
-- **Registers utilizados** e **instruÁıes executadas**
+- **Compila√ß√£o HLSL** com s√≠mbolos de debug
+- **An√°lise de performance** por shader
+- **Registers utilizados** e **instru√ß√µes executadas**
 
 ### **Memory Usage**
-- **Vertex Buffer** de 1MB din‚mico
-- **Constant Buffer** para transformaÁıes
+- **Vertex Buffer** de 1MB din√¢mico
+- **Constant Buffer** para transforma√ß√µes
 - **Render Targets** e **recursos DirectX**
 
-## ?? Troubleshooting
+## Troubleshooting
 
-### **PIX n„o inicializa**
+### **PIX n√£o inicializa**
 ```
-? Problema: "PIX n„o est· disponÌvel"
-? SoluÁ„o: 
-   1. Reinstale PIX da Microsoft Store
+Problema: "PIX n√£o est√° dispon√≠vel"
+Solu√ß√£o: 
+   1. Reinstale PIX do site oficial
    2. Execute como Administrador
    3. Verifique se o caminho existe: C:\Program Files\Microsoft PIX
 ```
 
 ### **"Incompatible version" Error**
 ```
-? Problema: "incompatible version of WinPixGpuCapturer.dll"
-? SoluÁ„o:
-   1. ? N√O copie DLLs do PIX
-   2. ? AplicaÁ„o carrega do diretÛrio original
-   3. Execute cleanup_pix_dlls.bat se necess·rio
-   4. Reinicie a aplicaÁ„o
+Problema: "incompatible version of WinPixGpuCapturer.dll"
+Solu√ß√£o:
+   1. N√ÉO copie DLLs do PIX
+   2. Aplica√ß√£o carrega do diret√≥rio original
+   3. Execute cleanup_pix_dlls.bat se necess√°rio
+   4. Reinicie a aplica√ß√£o
 ```
 
 ### **Attach falha**
 ```
-? Problema: "Failed to attach"
-? SoluÁ„o:
+Problema: "Failed to attach"
+Solu√ß√£o:
    1. Verifique se PIX foi inicializado (console log)
    2. Execute PIX como Administrador
-   3. Certifique-se que n„o h· DLLs copiadas
-   4. Use setup_pix.bat para verificar instalaÁ„o
+   3. Certifique-se que n√£o h√° DLLs copiadas
+   4. Use setup_pix.bat para verificar instala√ß√£o
 ```
 
 ### **DirectX falha**
 ```
-? Problema: Erro na inicializaÁ„o DirectX
-? SoluÁ„o:
-   1. Verifique drivers da placa de vÌdeo
-   2. Use placa dedicada se disponÌvel
+Problema: Erro na inicializa√ß√£o DirectX
+Solu√ß√£o:
+   1. Verifique drivers da placa de v√≠deo
+   2. Use placa dedicada se dispon√≠vel
    3. Execute como Administrador
 ```
 
-## ?? MÈtricas DisponÌveis
+## M√©tricas Dispon√≠veis
 
 ### **Tempo Real**
 - **FPS**: Frames por segundo
@@ -186,56 +186,132 @@ A aplicaÁ„o inclui marcadores PIX coloridos para an·lise detalhada:
 - **CPU Usage**: Via performance counters
 - **GPU Usage**: Simulado baseado na carga
 
-### **ConfiguraÁıes Din‚micas**
-- Todos os par‚metros ajust·veis em tempo real
-- Efeito imediato nas mÈtricas
-- Perfect para demonstraÁıes educacionais
+### **Configura√ß√µes Din√¢micas**
+- Todos os par√¢metros ajust√°veis em tempo real
+- Efeito imediato nas m√©tricas
+- Perfect para demonstra√ß√µes educacionais
 
-## ??? Scripts Auxiliares
+## Scripts Auxiliares
 
 ### **setup_pix.bat**
-- Verifica instalaÁ„o do PIX
-- N„o copia DLLs (importante!)
-- Mostra instruÁıes de uso
+- Verifica instala√ß√£o do PIX
+- N√£o copia DLLs (importante!)
+- Mostra instru√ß√µes de uso
 
 ### **cleanup_pix_dlls.bat**
 - Remove DLLs PIX copiadas (se existirem)
 - Resolve problemas de compatibilidade
-- Execute se tiver problemas de vers„o
+- Execute se tiver problemas de vers√£o
 
-## ?? Uso Educacional
+## Uso Educacional
 
-Esta ferramenta È ideal para:
+Esta ferramenta √© ideal para:
 - **Aulas de profiling** DirectX/Graphics
-- **DemonstraÁıes** de bottlenecks
+- **Demonstra√ß√µes** de bottlenecks
 - **Treinamento** em PIX for Windows
-- **An·lise** de performance gr·fica
-- **IdentificaÁ„o** de problemas comuns
+- **An√°lise** de performance gr√°fica
+- **Identifica√ß√£o** de problemas comuns
 
-## ?? Notas TÈcnicas
+## Notas T√©cnicas
 
 - **Target Framework**: .NET 10 Windows
 - **DirectX**: 11 via SharpDX 4.2.0
-- **Shaders**: HLSL com sÌmbolos de debug
+- **Shaders**: HLSL com s√≠mbolos de debug
 - **PIX**: WinPixEventRuntime 1.0.x
 - **Architecture**: x64 (requerido pelo PIX)
-- **PIX Compatibility**: ? Vers„o garantida
+- **PIX Compatibility**: Vers√£o garantida
 
-## ? Principais CorreÁıes
+## Principais Corre√ß√µes
 
 ### **Problema Original**
 ```
-? "incompatible version of WinPixGpuCapturer.dll"
-? "loaded from an incompatible location"
+"incompatible version of WinPixGpuCapturer.dll"
+"loaded from an incompatible location"
 ```
 
-### **SoluÁ„o Implementada**
+### **Solu√ß√£o Implementada**
 ```
-? Carregamento direto do diretÛrio PIX
-? Sem cÛpia de DLLs
-? Compatibilidade de vers„o garantida
-? Attach funcionando perfeitamente
+Carregamento direto do diret√≥rio PIX
+Sem c√≥pia de DLLs
+Compatibilidade de vers√£o garantida
+Attach funcionando perfeitamente
 ```
 
 ---
-**Desenvolvido para demonstraÁıes educacionais de profiling DirectX com PIX compatibility** ???
+**Desenvolvido para demonstra√ß√µes educacionais de profiling DirectX com PIX compatibility**
+
+# DirectX Profiling Demo - M√≥dulo 6, Aula 1
+
+## Vis√£o Geral
+
+Este projeto √© uma **demonstra√ß√£o educacional completa** para a **Aula 1 - Fundamentos do Profiling Gr√°fico no Windows** do curso de Profiling de Performance.
+
+> **Navega√ß√£o Completa:** [**Acesse o √çNDICE GERAL**](docs/INDEX.md) para encontrar rapidamente qualquer documento ou t√≥pico.
+
+### Objetivos da Aula
+- Entender o que √© profiling gr√°fico e sua import√¢ncia
+- Conhecer o pipeline gr√°fico DirectX 12
+- Dominar o uso do PIX para Windows
+- Identificar e diagnosticar gargalos de performance (CPU vs GPU)
+- Realizar an√°lises pr√°ticas com m√©tricas reais
+
+---
+
+## In√≠cio R√°pido (5 minutos)
+
+### Para Alunos (Primeira Vez)
+```bash
+# 1. Verificar ambiente
+setup_pix.bat
+
+# 2. Compilar com s√≠mbolos de debug
+dotnet build -c Debug /p:DebugType=portable /p:DebugSymbols=true
+
+# 3. Executar aplica√ß√£o
+dotnet run
+
+# 4. Seguir guia de primeira captura
+# Abrir docs/PIX_FIRST_CAPTURE_GUIDE.md
+```
+
+### Para Professores (Prepara√ß√£o de Aula)
+```bash
+# 1. Ler roteiro cronometrado
+# Abrir docs/PROFESSOR_QUICK_GUIDE.md
+
+# 2. Testar ambiente
+setup_pix.bat
+dotnet build -c Debug /p:DebugType=portable
+
+# 3. Gerar capturas de exemplo (3 cen√°rios)
+dotnet run
+# Capturar: Baseline, GPU Bottleneck, CPU Bottleneck
+
+# 4. Preparar material de aula
+# Revisar slides mapeados em docs/INDEX.md
+```
+
+---
+
+## Documenta√ß√£o Completa
+
+> **Dica:** Todos os documentos est√£o indexados em [**docs/INDEX.md**](docs/INDEX.md) com navega√ß√£o r√°pida por t√≥pico.
+
+### Para Alunos
+
+| Ordem | Documento | Tempo | Descri√ß√£o |
+|-------|-----------|-------|-----------|
+| 1 | **[PROFILING_CONCEPTS.md](docs/PROFILING_CONCEPTS.md)** | 30 min | Teoria: pipeline, m√©tricas, diagn√≥stico |
+| 2 | **[BUILD_AND_PDB_GUIDE.md](docs/BUILD_AND_PDB_GUIDE.md)** | 15 min | Como compilar com s√≠mbolos de debug |
+| 3 | **[PIX_FIRST_CAPTURE_GUIDE.md](docs/PIX_FIRST_CAPTURE_GUIDE.md)** | 45 min | Passo a passo: primeira captura |
+| 4 | **[PRACTICAL_CASES.md](docs/PRACTICAL_CASES.md)** | 1-2h | 4 casos pr√°ticos com diagn√≥stico |
+| 5 | **[QUIZ_AULA1.md](docs/QUIZ_AULA1.md)** | 20 min | 15 quest√µes + gabarito |
+| 6 | **[HOMEWORK_AULA1.md](docs/HOMEWORK_AULA1.md)** | 1-2h | Atividade estruturada para entregar |
+
+### Para Professores
+
+| Documento | Uso | Descri√ß√£o |
+|-----------|-----|-----------|
+| **[PROFESSOR_QUICK_GUIDE.md](docs/PROFESSOR_QUICK_GUIDE.md)** | Durante aula | Roteiro cronometrado (2h45) + FAQ |
+| **[AULA1_COMPLETE_CHECKLIST.md](docs/AULA1_COMPLETE_CHECKLIST.md)** | Refer√™ncia | Status de cobertura dos 15 slides |
+| **[INDEX.md](docs/INDEX.md)** | Navega√ß√£o | √çndice geral com busca por t√≥pico |

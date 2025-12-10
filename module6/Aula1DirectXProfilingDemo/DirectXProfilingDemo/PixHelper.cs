@@ -1,4 +1,3 @@
-using System;
 using System.Runtime.InteropServices;
 
 namespace DirectXProfilingDemo
@@ -43,7 +42,7 @@ namespace DirectXProfilingDemo
                 string[] possiblePaths = {
                     @"C:\Program Files\Microsoft PIX\2509.25",
                     @"C:\Program Files\Microsoft PIX",
-                    @"C:\Program Files (x86)\Microsoft PIX\2509.25", 
+                    @"C:\Program Files (x86)\Microsoft PIX\2509.25",
                     @"C:\Program Files (x86)\Microsoft PIX",
                     // Versões mais recentes
                     @"C:\Program Files\Microsoft PIX\2510.01",
@@ -53,14 +52,14 @@ namespace DirectXProfilingDemo
                 foreach (string pixPath in possiblePaths)
                 {
                     string pixDllPath = System.IO.Path.Combine(pixPath, "WinPixGpuCapturer.dll");
-                    
+
                     if (System.IO.File.Exists(pixDllPath))
                     {
                         Console.WriteLine($"[PIX] ?? Tentando carregar do diretório PIX: {pixPath}");
-                        
+
                         // IMPORTANTE: Carregar DIRETAMENTE do diretório de instalação do PIX
                         pixGpuCapturerHandle = LoadLibrary(pixDllPath);
-                        
+
                         if (pixGpuCapturerHandle != IntPtr.Zero)
                         {
                             pixInitialized = true;
@@ -182,7 +181,7 @@ namespace DirectXProfilingDemo
         {
             if (!pixInitialized)
                 return "? PIX não inicializado";
-            
+
             return $"? PIX ativo | Diretório: {pixInstallPath} | Handle: 0x{pixGpuCapturerHandle:X}";
         }
     }
