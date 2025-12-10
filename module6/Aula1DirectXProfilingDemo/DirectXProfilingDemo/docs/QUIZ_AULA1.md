@@ -267,26 +267,6 @@ O arquivo .pdb (Program Database) contém símbolos de debug, permitindo que o PIX
 4. **Reduzir draw calls** - Simplificar lógica de renderização
 5. **Usar indirect drawing** - Deixar a GPU decidir o que desenhar
 
----
-
-## Pontuação
-
-- **13-16 corretas**: Excelente! Você dominou os fundamentos.
-- **9-12 corretas**: Bom! Revise os conceitos que errou.
-- **5-8 corretas**: Precisa revisar. Releia `PROFILING_CONCEPTS.md`.
-- **0-4 corretas**: Recomendado revisar toda a Aula 1.
-
----
-
-## Próximos Passos
-
-Após completar o questionário:
-
-1. **Se foi bem**: Avance para `PIX_FIRST_CAPTURE_GUIDE.md` e faça sua primeira captura!
-2. **Se teve dificuldades**: Releia `PROFILING_CONCEPTS.md` e refaça o questionário.
-3. **Para praticar**: Capture frames em diferentes cenários (Baseline, GPU Bottleneck, CPU Bottleneck) e compare.
-
----
 
 **Autor**: Material didático PUC - Profiling no Windows  
 **Atualizado**: 2025  

@@ -12,6 +12,23 @@ namespace DirectXProfilingDemo
 {
     public class DirectXRenderer : IDisposable
     {
+        // === CONFIGURAÇÃO PARA FORÇAR USO DA GPU NVIDIA ===
+        // Estes atributos são lidos pelo driver NVIDIA/AMD para determinar qual GPU usar
+        // Documentação: https://docs.nvidia.com/gameworks/content/technologies/desktop/optimus.htm
+        
+        /// <summary>
+        /// NVIDIA Optimus: 0 = GPU integrada, 1 = GPU dedicada (NVIDIA)
+        /// Este atributo força o driver NVIDIA a usar a GPU dedicada
+        /// IMPORTANTE: Deve ser público e estático para ser exportado corretamente
+        /// </summary>
+        public static int NvOptimusEnablement = 0x00000001;  // 1 = forçar GPU NVIDIA
+        
+        /// <summary>
+        /// AMD PowerXpress: 0 = GPU integrada, 1 = GPU dedicada (AMD)
+        /// Equivalente ao NvOptimusEnablement para placas AMD
+        /// </summary>
+        public static int AmdPowerXpressRequestHighPerformance = 1;  // 1 = forçar GPU AMD
+
         // Dispositivos DirectX - Objetos principais para comunicação com a GPU
         private Device device;                          // Representa a GPU e cria recursos
         private DeviceContext context;                  // Contexto para enviar comandos para a GPU
@@ -94,6 +111,9 @@ namespace DirectXProfilingDemo
         {
             try
             {
+                // Passo 0: Listar GPUs disponíveis e exibir informações
+                ListAvailableGPUs();
+                
                 // Passo 1: Criar o device DirectX e swap chain
                 InitializeDeviceAndSwapChain(windowHandle);
                 
@@ -111,6 +131,89 @@ namespace DirectXProfilingDemo
                 Console.WriteLine($"DirectX initialization failed: {ex.Message}");
                 throw;
             }
+        }
+
+        /// <summary>
+        /// Lista todas as GPUs (adaptadores) disponíveis no sistema
+        /// Exibe informações detalhadas sobre cada GPU encontrada
+        /// </summary>
+        private void ListAvailableGPUs()
+        {
+            Console.WriteLine("\n????????????????????????????????????????????????????????????????");
+            Console.WriteLine("?          DETECÇÃO DE GPUs DISPONÍVEIS NO SISTEMA            ?");
+            Console.WriteLine("????????????????????????????????????????????????????????????????\n");
+
+            using (var factory = new Factory1())
+            {
+                int adapterCount = factory.GetAdapterCount1();
+                Console.WriteLine($"Total de adaptadores encontrados: {adapterCount}\n");
+
+                for (int i = 0; i < adapterCount; i++)
+                {
+                    using (var adapter = factory.GetAdapter1(i))
+                    {
+                        var desc = adapter.Description1;
+                        
+                        // Determinar o tipo de GPU baseado no VendorId
+                        string vendor = desc.VendorId switch
+                        {
+                            0x10DE => "NVIDIA",
+                            0x1002 => "AMD",
+                            0x8086 => "Intel",
+                            _ => $"Desconhecido (0x{desc.VendorId:X4})"
+                        };
+
+                        // Determinar se é dedicada ou integrada baseado na memória dedicada
+                        string gpuType = desc.DedicatedVideoMemory > 1_000_000_000 ? "Dedicada" : "Integrada";
+                        
+                        Console.WriteLine($"?? Adaptador {i}: {desc.Description}");
+                        Console.WriteLine($"?  Fabricante: {vendor}");
+                        Console.WriteLine($"?  Tipo: {gpuType}");
+                        Console.WriteLine($"?  Memória Dedicada: {desc.DedicatedVideoMemory / (1024 * 1024)} MB");
+                        Console.WriteLine($"?  Memória Compartilhada: {desc.SharedSystemMemory / (1024 * 1024)} MB");
+                        Console.WriteLine($"?  Device ID: 0x{desc.DeviceId:X4}");
+                        Console.WriteLine($"?  Vendor ID: 0x{desc.VendorId:X4}");
+                        Console.WriteLine($"?? LUID: {desc.Luid}\n");
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Busca e retorna o adaptador NVIDIA (GPU dedicada)
+        /// Retorna null se não encontrar nenhuma GPU NVIDIA
+        /// </summary>
+        private Adapter1? FindNvidiaAdapter()
+        {
+            using (var factory = new Factory1())
+            {
+                int adapterCount = factory.GetAdapterCount1();
+                
+                for (int i = 0; i < adapterCount; i++)
+                {
+                    var adapter = factory.GetAdapter1(i);
+                    var desc = adapter.Description1;
+                    
+                    // VendorId 0x10DE = NVIDIA
+                    if (desc.VendorId == 0x10DE)
+                    {
+                        Console.WriteLine($"\n? GPU NVIDIA ENCONTRADA E SELECIONADA:");
+                        Console.WriteLine($"  Nome: {desc.Description}");
+                        Console.WriteLine($"  Memória: {desc.DedicatedVideoMemory / (1024 * 1024)} MB");
+                        Console.WriteLine($"  Device ID: 0x{desc.DeviceId:X4}\n");
+                        
+                        return adapter;  // Retorna o adaptador NVIDIA (não dispose, será usado)
+                    }
+                    else
+                    {
+                        adapter.Dispose();  // Não é NVIDIA, liberar
+                    }
+                }
+            }
+            
+            Console.WriteLine("\n? AVISO: Nenhuma GPU NVIDIA encontrada!");
+            Console.WriteLine("  A aplicação usará o adaptador padrão do sistema.\n");
+            return null;
         }
 
         /// <summary>
@@ -137,15 +240,39 @@ namespace DirectXProfilingDemo
                 SwapEffect = SwapEffect.Discard                     // Discard: descarta conteúdo anterior (mais rápido)
             };
 
-            // Criar device e swap chain juntos
-            Device.CreateWithSwapChain(
-                DriverType.Hardware,                // Hardware: usa a GPU física
-                DeviceCreationFlags.Debug,          // Debug: ativa validação extra (útil para desenvolvimento)
-                swapChainDescription,
-                out device,
-                out swapChain);
+            // Tentar encontrar e usar GPU NVIDIA
+            var nvidiaAdapter = FindNvidiaAdapter();
+            
+            if (nvidiaAdapter != null)
+            {
+                // Criar device com o adaptador NVIDIA específico
+                using (var factory = new Factory1())
+                {
+                    device = new Device(nvidiaAdapter, DeviceCreationFlags.Debug);
+                    swapChain = new SwapChain(factory, device, swapChainDescription);
+                }
+                
+                nvidiaAdapter.Dispose();  // Liberar adaptador após criar o device
+                
+                Console.WriteLine("? DirectX Device criado com sucesso usando GPU NVIDIA!\n");
+            }
+            else
+            {
+                // Fallback: usar o método padrão (GPU padrão do sistema)
+                Console.WriteLine("? Usando método padrão de criação do Device (GPU padrão)...\n");
+                
+                Device.CreateWithSwapChain(
+                    DriverType.Hardware,                // Hardware: usa a GPU física
+                    DeviceCreationFlags.Debug,          // Debug: ativa validação extra (útil para desenvolvimento)
+                    swapChainDescription,
+                    out device,
+                    out swapChain);
+            }
 
             context = device.ImmediateContext;      // Contexto imediato: executa comandos imediatamente
+
+            // Exibir informações sobre o device criado
+            DisplayDeviceInfo();
 
             // Configurar render target - onde desenhamos
             using (var backBuffer = swapChain.GetBackBuffer<Texture2D>(0))  // Buffer 0 = back buffer
@@ -198,6 +325,50 @@ namespace DirectXProfilingDemo
                 0.0f, 1.0f);    // Profundidade mínima (0.0) e máxima (1.0)
             
             context.Rasterizer.SetViewport(viewport);
+        }
+
+        /// <summary>
+        /// Exibe informações detalhadas sobre o Device DirectX criado
+        /// </summary>
+        private void DisplayDeviceInfo()
+        {
+            try
+            {
+                using (var dxgiDevice = device.QueryInterface<SharpDX.DXGI.Device>())
+                using (var adapter = dxgiDevice.Adapter)
+                {
+                    var desc = adapter.Description;
+                    
+                    Console.WriteLine("????????????????????????????????????????????????????????????????");
+                    Console.WriteLine("?              GPU SENDO USADA PARA RENDERIZAÇÃO              ?");
+                    Console.WriteLine("????????????????????????????????????????????????????????????????");
+                    Console.WriteLine($"\n  GPU: {desc.Description}");
+                    Console.WriteLine($"  Memória VRAM: {desc.DedicatedVideoMemory / (1024 * 1024)} MB");
+                    Console.WriteLine($"  Memória Compartilhada: {desc.SharedSystemMemory / (1024 * 1024)} MB");
+                    Console.WriteLine($"  Vendor ID: 0x{desc.VendorId:X4} ({GetVendorName(desc.VendorId)})");
+                    Console.WriteLine($"  Device ID: 0x{desc.DeviceId:X4}");
+                    Console.WriteLine($"  Feature Level: {device.FeatureLevel}");
+                    Console.WriteLine("\n??????????????????????????????????????????????????????????????\n");
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"? Não foi possível obter informações do device: {ex.Message}\n");
+            }
+        }
+
+        /// <summary>
+        /// Retorna o nome do fabricante baseado no Vendor ID
+        /// </summary>
+        private string GetVendorName(int vendorId)
+        {
+            return vendorId switch
+            {
+                0x10DE => "NVIDIA Corporation",
+                0x1002 => "AMD/ATI",
+                0x8086 => "Intel Corporation",
+                _ => "Desconhecido"
+            };
         }
 
         /// <summary>

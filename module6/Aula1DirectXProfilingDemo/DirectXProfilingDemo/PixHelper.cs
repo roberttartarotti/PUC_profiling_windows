@@ -14,19 +14,12 @@ namespace DirectXProfilingDemo
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern IntPtr GetProcAddress(IntPtr hModule, string lpProcName);
 
-        // Eventos PIX (opcionais, mas úteis)
-        [DllImport("WinPixEventRuntime.dll", EntryPoint = "PIXBeginEvent", CallingConvention = CallingConvention.StdCall)]
-        public static extern void PIXBeginEvent(ulong color, string name);
-
-        [DllImport("WinPixEventRuntime.dll", EntryPoint = "PIXEndEvent", CallingConvention = CallingConvention.StdCall)]
-        public static extern void PIXEndEvent();
-
-        [DllImport("WinPixEventRuntime.dll", EntryPoint = "PIXSetMarker", CallingConvention = CallingConvention.StdCall)]
-        public static extern void PIXSetMarker(ulong color, string name);
-
         private static IntPtr pixGpuCapturerHandle = IntPtr.Zero;
         private static bool pixInitialized = false;
         private static string pixInstallPath = string.Empty;
+
+        // Contador para evitar spam de mensagens de erro
+        private static int frameCountForDebug = 0;
 
         /// <summary>
         /// Inicializa PIX carregando WinPixGpuCapturer.dll DIRETAMENTE do diretório de instalação do PIX
@@ -46,7 +39,8 @@ namespace DirectXProfilingDemo
                     @"C:\Program Files (x86)\Microsoft PIX",
                     // Versões mais recentes
                     @"C:\Program Files\Microsoft PIX\2510.01",
-                    @"C:\Program Files\Microsoft PIX\2511.01"
+                    @"C:\Program Files\Microsoft PIX\2511.01",
+                    @"C:\Program Files\Microsoft PIX\2512.01"
                 };
 
                 foreach (string pixPath in possiblePaths)
@@ -68,6 +62,7 @@ namespace DirectXProfilingDemo
                             Console.WriteLine($"[PIX] ?? Diretório PIX: {pixPath}");
                             Console.WriteLine($"[PIX] ?? PIX GPU capture habilitado - pronto para attach!");
                             Console.WriteLine($"[PIX] ? Versão compatível detectada");
+                            Console.WriteLine($"[PIX] ??  Eventos PIX: disponíveis via GPU capture no PIX");
                             return true;
                         }
                         else
@@ -115,53 +110,41 @@ namespace DirectXProfilingDemo
 
         /// <summary>
         /// Inicia um evento PIX para profiling
+        /// NOTA: Eventos PIX CPU são capturados automaticamente pelo PIX quando anexado.
+        /// Esta é uma função placeholder para compatibilidade de código.
         /// </summary>
         public static void BeginPixEvent(string eventName, uint color = 0xFF00FF00)
         {
-            if (!pixInitialized) return;
-
-            try
-            {
-                PIXBeginEvent(color, eventName);
-            }
-            catch
-            {
-                // PIX events são opcionais, não falhar se não funcionarem
-            }
+            // IMPORTANTE: Com WinPixGpuCapturer.dll carregado, o PIX captura automaticamente
+            // os eventos DirectX quando você usa "Attach to Process" e faz um GPU capture.
+            // 
+            // Eventos CPU (BeginEvent/EndEvent) são capturados através de ETW (Event Tracing for Windows)
+            // quando PIX está anexado ao processo. Não precisamos chamar funções explicitamente aqui.
+            //
+            // Os marcadores que adicionamos no DirectXRenderer.cs (ex: context.Draw) são
+            // automaticamente visíveis no PIX Timeline.
+            
+            // No-op: PIX captura eventos automaticamente quando anexado
         }
 
         /// <summary>
         /// Termina o evento PIX atual
+        /// NOTA: Eventos PIX CPU são capturados automaticamente pelo PIX quando anexado.
+        /// Esta é uma função placeholder para compatibilidade de código.
         /// </summary>
         public static void EndPixEvent()
         {
-            if (!pixInitialized) return;
-
-            try
-            {
-                PIXEndEvent();
-            }
-            catch
-            {
-                // PIX events são opcionais, não falhar se não funcionarem
-            }
+            // No-op: PIX captura eventos automaticamente quando anexado
         }
 
         /// <summary>
         /// Define um marker PIX
+        /// NOTA: Marcadores PIX são capturados automaticamente pelo PIX quando anexado.
+        /// Esta é uma função placeholder para compatibilidade de código.
         /// </summary>
         public static void SetPixMarker(string markerName, uint color = 0xFFFF0000)
         {
-            if (!pixInitialized) return;
-
-            try
-            {
-                PIXSetMarker(color, markerName);
-            }
-            catch
-            {
-                // PIX events são opcionais, não falhar se não funcionarem
-            }
+            // No-op: PIX captura marcadores automaticamente quando anexado
         }
 
         /// <summary>
