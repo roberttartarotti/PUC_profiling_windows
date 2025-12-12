@@ -223,11 +223,31 @@ namespace WpfXamlPerformanceDemo
         {
             try
             {
-                // Atualizar FPS
-                var fps = PerformanceMonitor.CalculateFPS();
+                // Atualizar FPS usando múltiplos métodos para garantir que funcione
+                var perfMonitor = PerformanceMonitor.Instance;
+                
+                // Tentar o método mais simples primeiro
+                var simpleFps = perfMonitor.GetSimpleFPS();
+                var avgFps = perfMonitor.GetCurrentFPS();
+                var calculatedFps = PerformanceMonitor.CalculateFPS();
+                
+                // Usar o melhor FPS disponível
+                var displayFps = simpleFps > 0 ? simpleFps : (avgFps > 0 ? avgFps : calculatedFps);
+                
                 if (FpsCounter != null)
                 {
-                    FpsCounter.Text = fps.ToString("F1");
+                    FpsCounter.Text = displayFps.ToString("F1");
+                }
+
+                // Debug detalhado a cada 3 segundos
+                if (DateTime.Now.Second % 3 == 0)
+                {
+                    Debug.WriteLine($"=== FPS Debug ===");
+                    Debug.WriteLine($"FPS Simple: {simpleFps}");
+                    Debug.WriteLine($"FPS Average: {avgFps:F1}");
+                    Debug.WriteLine($"FPS Calculated: {calculatedFps:F1}");
+                    Debug.WriteLine($"FPS Displayed: {displayFps:F1}");
+                    Debug.WriteLine($"=================");
                 }
 
                 // Atualizar uso de memória
