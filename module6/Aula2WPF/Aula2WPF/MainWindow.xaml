@@ -1,0 +1,495 @@
+﻿<Window x:Class="WpfXamlPerformanceDemo.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:WpfXamlPerformanceDemo"
+        xmlns:sys="clr-namespace:System;assembly=mscorlib"
+        mc:Ignorable="d"
+        Title="WPF XAML Performance Anti-Patterns" 
+        Height="800" 
+        Width="1200"
+        Loaded="Window_Loaded">
+
+    <Window.Resources>
+        <!-- Converter para TwoWay bindings problemáticos -->
+        <local:ExpensiveConverter x:Key="ExpensiveConverter"/>
+
+        <!-- BooleanToVisibilityConverter -->
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <!-- Header Gradient Brush -->
+        <LinearGradientBrush x:Key="HeaderGradient" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#3498db" Offset="0"/>
+            <GradientStop Color="#2ecc71" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!-- Storyboards que causam redraws constantes -->
+        <Storyboard x:Key="PulseAnimation" RepeatBehavior="Forever">
+            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                             From="0.5" To="1.0" 
+                             Duration="0:0:1" 
+                             AutoReverse="True"/>
+        </Storyboard>
+
+        <!-- VisualBrush que captura toda a UI -->
+        <VisualBrush x:Key="ReflectiveBrush" TileMode="None">
+            <VisualBrush.Visual>
+                <!-- REFLETIR A PRÓPRIA JANELA (MUITO PESADO!) -->
+                <Border Background="Transparent">
+                    <ContentControl Content="{Binding RelativeSource={
+                        RelativeSource Mode=FindAncestor, 
+                        AncestorType={x:Type Window}}}"/>
+                </Border>
+            </VisualBrush.Visual>
+            <VisualBrush.RelativeTransform>
+                <ScaleTransform ScaleX="0.1" ScaleY="0.1"/>
+            </VisualBrush.RelativeTransform>
+        </VisualBrush>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- CABEÇALHO COM ANIMAÇÕES CONSTANTES -->
+        <Border Grid.Row="0" 
+                Background="{StaticResource HeaderGradient}"
+                Height="60">
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="10" ShadowDepth="3"/>
+            </Border.Effect>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- Logo com rotação constante -->
+                <Border Grid.Column="0" 
+                        Width="40" 
+                        Height="40" 
+                        CornerRadius="20" 
+                        Background="#e74c3c" 
+                        Margin="10"
+                        RenderTransformOrigin="0.5,0.5">
+                    <Border.RenderTransform>
+                        <RotateTransform x:Name="RotatingLogo"/>
+                    </Border.RenderTransform>
+                    <Border.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard>
+                                <Storyboard>
+                                    <DoubleAnimation Storyboard.TargetName="RotatingLogo"
+                                                     Storyboard.TargetProperty="Angle"
+                                                     From="0" To="360" 
+                                                     Duration="0:0:5"
+                                                     RepeatBehavior="Forever"/>
+                                </Storyboard>
+                            </BeginStoryboard>
+                        </EventTrigger>
+                    </Border.Triggers>
+                    <TextBlock Text="!" 
+                               HorizontalAlignment="Center" 
+                               VerticalAlignment="Center"
+                               Foreground="White"
+                               FontSize="24"
+                               FontWeight="Bold"/>
+                </Border>
+
+                <!-- Título com efeito de pulso -->
+                <TextBlock Grid.Column="1" 
+                          Text="WPF PERFORMANCE DEMO - ANTI-PATTERNS" 
+                          Foreground="White"
+                          FontSize="18"
+                          FontWeight="Bold"
+                          VerticalAlignment="Center">
+                    <TextBlock.Triggers>
+                        <EventTrigger RoutedEvent="Loaded">
+                            <BeginStoryboard Storyboard="{StaticResource PulseAnimation}"/>
+                        </EventTrigger>
+                    </TextBlock.Triggers>
+                </TextBlock>
+
+                <!-- Controles do cabeçalho -->
+                <StackPanel Grid.Column="2" 
+                           Orientation="Horizontal" 
+                           Margin="10">
+                    <Button Content="Add Item" 
+                           Template="{StaticResource ComplexButtonTemplate}"
+                           Click="AddItem_Click"/>
+                    <Button Content="Clear All" 
+                           Template="{StaticResource ComplexButtonTemplate}"
+                           Click="ClearAll_Click"/>
+                    <Button Content="Stress Test" 
+                           Template="{StaticResource ComplexButtonTemplate}"
+                           Click="StressTest_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- CONTEÚDO PRINCIPAL - MULTIPLE NESTING -->
+        <TabControl Grid.Row="1" Margin="10">
+
+            <!-- TAB 1: LISTVIEW PROBLEMÁTICO -->
+            <TabItem Header="ListView Issues">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Filtros com bindings TwoWay -->
+                    <Border Grid.Row="0" 
+                           Background="#f8f9fa" 
+                           Padding="10" 
+                           Margin="0,0,0,5">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Filter:" 
+                                      VerticalAlignment="Center" 
+                                      Margin="0,0,10,0"/>
+
+                            <!-- TextBox com estilo pesado e binding TwoWay -->
+                            <TextBox x:Name="FilterTextBox" 
+                                    Width="200" 
+                                    Style="{StaticResource HeavyTextBoxStyle}"
+                                    Text="{Binding FilterText, Mode=TwoWay, 
+                                           UpdateSourceTrigger=PropertyChanged,
+                                           Converter={StaticResource ExpensiveConverter}}"/>
+
+                            <!-- CheckBoxes com bindings complexos -->
+                            <CheckBox x:Name="ShowInactiveCheckBox" 
+                                     Content="Show Inactive" 
+                                     Margin="20,0,0,0"
+                                     IsChecked="{Binding ShowInactive, Mode=TwoWay}"/>
+
+                            <CheckBox x:Name="GroupItemsCheckBox" 
+                                     Content="Group Items" 
+                                     Margin="20,0,0,0"
+                                     IsChecked="{Binding GroupItems, Mode=TwoWay}"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- LISTVIEW SEM VIRTUALIZAÇÃO (PROBLEMA GRAVE!) -->
+                    <ListView x:Name="ItemsListView" 
+                             Grid.Row="1"
+                             ItemsSource="{Binding Items}"
+                             ItemTemplate="{StaticResource HeavyItemTemplate}"
+                             VirtualizingStackPanel.IsVirtualizing="False"
+                             ScrollViewer.VerticalScrollBarVisibility="Visible">
+
+                        <ListView.GroupStyle>
+                            <!-- GroupStyle complexo -->
+                            <GroupStyle>
+                                <GroupStyle.HeaderTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#3498db" 
+                                                CornerRadius="3" 
+                                                Padding="10,5" 
+                                                Margin="0,5">
+                                            <TextBlock Text="{Binding Name}" 
+                                                      Foreground="White" 
+                                                      FontWeight="Bold"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </GroupStyle.HeaderTemplate>
+                            </GroupStyle>
+                        </ListView.GroupStyle>
+
+                        <ListView.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <!-- StackPanel em vez de VirtualizingStackPanel -->
+                                <StackPanel Orientation="Vertical"/>
+                            </ItemsPanelTemplate>
+                        </ListView.ItemsPanel>
+
+                    </ListView>
+
+                    <!-- Status bar com bindings frequentes -->
+                    <StatusBar Grid.Row="2" Background="#ecf0f1">
+                        <StatusBarItem>
+                            <TextBlock>
+                                <Run Text="Items:"/>
+                                <Run Text="{Binding ItemCount, Mode=OneWay}"/>
+                            </TextBlock>
+                        </StatusBarItem>
+                        <Separator/>
+                        <StatusBarItem>
+                            <TextBlock>
+                                <Run Text="Selected:"/>
+                                <Run Text="{Binding ElementName=ItemsListView, 
+                                                    Path=SelectedItems.Count, Mode=OneWay}"/>
+                            </TextBlock>
+                        </StatusBarItem>
+                        <Separator/>
+                        <StatusBarItem>
+                            <ProgressBar x:Name="LoadProgress" 
+                                        Width="200" 
+                                        Height="20"
+                                        IsIndeterminate="True"
+                                        Visibility="{Binding IsLoading, 
+                                                    Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                        </StatusBarItem>
+                    </StatusBar>
+                </Grid>
+            </TabItem>
+
+            <!-- TAB 2: EXCESSIVE CONTROLS -->
+            <TabItem Header="Excessive Controls">
+                <ScrollViewer>
+                    <StackPanel>
+                        <!-- MUITOS CONTROLES ANINHADOS -->
+                        <GroupBox Header="Deep Nesting Example" Margin="10">
+                            <Border Background="White" Padding="10">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <!-- Grid dentro de Grid dentro de Grid... -->
+                                    <Grid Grid.Row="0" Margin="0,0,0,10">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0" 
+                                               Background="#f1f2f6" 
+                                               Padding="10" 
+                                               Margin="0,0,5,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Left Panel" FontWeight="Bold"/>
+                                                <local:HeavyUserControl Margin="0,5"/>
+                                                <local:HeavyUserControl Margin="0,5"/>
+                                                <local:HeavyUserControl Margin="0,5"/>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Grid.Column="1" 
+                                               Background="#f1f2f6" 
+                                               Padding="10" 
+                                               Margin="5,0,0,0">
+                                            <StackPanel>
+                                                <TextBlock Text="Right Panel" FontWeight="Bold"/>
+                                                <local:HeavyUserControl Margin="0,5"/>
+                                                <local:HeavyUserControl Margin="0,5"/>
+                                                <local:HeavyUserControl Margin="0,5"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+
+                                    <!-- DataGrid com muitas colunas -->
+                                    <DataGrid x:Name="SampleDataGrid" 
+                                             Grid.Row="1"
+                                             AutoGenerateColumns="True"
+                                             CanUserAddRows="True"
+                                             CanUserDeleteRows="True"
+                                             RowDetailsVisibilityMode="VisibleWhenSelected">
+
+                                        <DataGrid.RowDetailsTemplate>
+                                            <DataTemplate>
+                                                <!-- Detalhes expansíveis complexos -->
+                                                <Border Background="#f8f9fa" Padding="10">
+                                                    <StackPanel>
+                                                        <TextBlock Text="Details:" FontWeight="Bold"/>
+                                                        <TextBox Text="{Binding Details}" 
+                                                                Style="{StaticResource HeavyTextBoxStyle}"
+                                                                AcceptsReturn="True" 
+                                                                Height="50"/>
+                                                        <StackPanel Orientation="Horizontal" Margin="0,5">
+                                                            <Button Content="Save" Margin="0,0,5,0"/>
+                                                            <Button Content="Cancel"/>
+                                                        </StackPanel>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </DataGrid.RowDetailsTemplate>
+                                    </DataGrid>
+                                </Grid>
+                            </Border>
+                        </GroupBox>
+
+                        <!-- CONTROLES COM EFEITOS VISUAIS PESADOS -->
+                        <GroupBox Header="Visual Effects Overload" Margin="10">
+                            <WrapPanel>
+                                <!-- Muitos controles com efeitos -->
+                                <Border Width="150" Height="150" Margin="5">
+                                    <Border.Background>
+                                        <VisualBrush>
+                                            <VisualBrush.Visual>
+                                                <Border Background="#e0e0e0" Width="150" Height="150">
+                                                    <TextBlock Text="Visual" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                                </Border>
+                                            </VisualBrush.Visual>
+                                        </VisualBrush>
+                                    </Border.Background>
+                                    <Border.Effect>
+                                        <BlurEffect Radius="5"/>
+                                    </Border.Effect>
+                                    <TextBlock Text="Reflective" 
+                                              HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"/>
+                                </Border>
+
+                                <Border Width="150" Height="150" Margin="5">
+                                    <Border.Background>
+                                        <RadialGradientBrush>
+                                            <GradientStop Color="#FF0000" Offset="0"/>
+                                            <GradientStop Color="#00FF00" Offset="0.5"/>
+                                            <GradientStop Color="#0000FF" Offset="1"/>
+                                        </RadialGradientBrush>
+                                    </Border.Background>
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="20" ShadowDepth="10"/>
+                                    </Border.Effect>
+                                    <TextBlock Text="Gradient" 
+                                              HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"/>
+                                </Border>
+
+                                <!-- Animação constante -->
+                                <Border Width="150" Height="150" Margin="5" Background="Red">
+                                    <Border.Triggers>
+                                        <EventTrigger RoutedEvent="Loaded">
+                                            <BeginStoryboard>
+                                                <Storyboard RepeatBehavior="Forever">
+                                                    <ColorAnimation Storyboard.TargetProperty="Background.(SolidColorBrush.Color)"
+                                                                    From="Red" To="Blue" 
+                                                                    Duration="0:0:2" 
+                                                                    AutoReverse="True"/>
+                                                </Storyboard>
+                                            </BeginStoryboard>
+                                        </EventTrigger>
+                                    </Border.Triggers>
+                                    <TextBlock Text="Animating" 
+                                              HorizontalAlignment="Center" 
+                                              VerticalAlignment="Center"/>
+                                </Border>
+                            </WrapPanel>
+                        </GroupBox>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- TAB 3: BINDING PROBLEMS -->
+            <TabItem Header="Binding Issues">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- TwoWay bindings em cascata -->
+                    <ScrollViewer Grid.Row="0" Padding="10">
+                        <StackPanel>
+                            <TextBlock Text="Cascading TwoWay Bindings (Performance Killer)" 
+                                      FontWeight="Bold" 
+                                      Margin="0,0,0,10"/>
+
+                            <!-- Bindings que disparam uns aos outros -->
+                            <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                                <TextBox x:Name="SourceTextBox" 
+                                        Width="200" 
+                                        Text="{Binding SourceText, Mode=TwoWay, 
+                                               UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBlock Text=" -> " Margin="10,0"/>
+                                <TextBox x:Name="IntermediateTextBox" 
+                                        Width="200" 
+                                        Text="{Binding ElementName=SourceTextBox, 
+                                               Path=Text, Mode=OneWay}"/>
+                                <TextBlock Text=" -> " Margin="10,0"/>
+                                <TextBox x:Name="FinalTextBox" 
+                                        Width="200" 
+                                        Text="{Binding ElementName=IntermediateTextBox, 
+                                               Path=Text, Mode=OneWay}"/>
+                            </StackPanel>
+
+                            <!-- MultiBinding complexo -->
+                            <GroupBox Header="MultiBinding Example" Margin="0,20,0,0">
+                                <StackPanel>
+                                    <TextBox x:Name="FirstName" 
+                                            Text="John" 
+                                            Margin="0,0,0,5"/>
+                                    <TextBox x:Name="LastName" 
+                                            Text="Doe" 
+                                            Margin="0,0,0,5"/>
+                                    <TextBlock>
+                                        <TextBlock.Text>
+                                            <MultiBinding StringFormat="{}{0} {1}">
+                                                <Binding ElementName="FirstName" Path="Text"/>
+                                                <Binding ElementName="LastName" Path="Text"/>
+                                            </MultiBinding>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </StackPanel>
+                            </GroupBox>
+
+                            <!-- Binding para propriedade computada -->
+                            <GroupBox Header="Computed Property Binding" Margin="0,20,0,0">
+                                <StackPanel>
+                                    <Slider x:Name="ValueSlider" 
+                                           Minimum="0" 
+                                           Maximum="100" 
+                                           Value="50"/>
+                                    <TextBlock>
+                                        <TextBlock.Text>
+                                            <Binding ElementName="ValueSlider" 
+                                                    Path="Value"
+                                                    Converter="{StaticResource ExpensiveConverter}"/>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+                                </StackPanel>
+                            </GroupBox>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <!-- Debug info -->
+                    <Border Grid.Row="1" 
+                           Background="#34495e" 
+                           Padding="10">
+                        <TextBlock Foreground="White" FontSize="10">
+                            <Run Text="Binding Updates: "/>
+                            <Run x:Name="BindingUpdateCount" Text="0"/>
+                            <Run Text=" | Layout Passes: "/>
+                            <Run x:Name="LayoutPassCount" Text="0"/>
+                        </TextBlock>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+        </TabControl>
+
+        <!-- RODAPÉ COM MAIS ANIMAÇÕES -->
+        <StatusBar Grid.Row="2" Background="#2c3e50" x:Name="FooterStatusBar">
+            <StatusBarItem>
+                <TextBlock Foreground="White">
+                    <Run Text="FPS: "/>
+                    <Run x:Name="FpsCounter" Text="60"/>
+                </TextBlock>
+            </StatusBarItem>
+            <Separator Foreground="White"/>
+            <StatusBarItem>
+                <TextBlock Foreground="White">
+                    <Run Text="Memory: "/>
+                    <Run x:Name="MemoryUsage" Text="0 MB"/>
+                </TextBlock>
+            </StatusBarItem>
+            <Separator Foreground="White"/>
+            <StatusBarItem>
+                <Button Content="Start Profiling Session" 
+                       Foreground="White" 
+                       Background="Transparent"
+                       BorderThickness="0"
+                       Click="StartProfiling_Click"/>
+            </StatusBarItem>
+        </StatusBar>
+
+    </Grid>
+</Window>
