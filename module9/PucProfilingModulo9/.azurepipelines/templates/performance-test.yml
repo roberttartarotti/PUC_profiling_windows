@@ -1,0 +1,55 @@
+parameters:
+  - name: target
+    type: string
+  - name: emoji
+    type: string
+    default: ':rocket:'
+  - name: note
+    type: string
+
+steps:
+  - checkout: self
+
+  - powershell: |
+      $result = & .\tests\performance\case4-startup-time.ps1 -Target ${{ parameters.target }} -CIMode
+      $exitCode = $LASTEXITCODE
+      
+      $resultsFile = ".\tests\results\case4-startup-performance-${{ parameters.target }}.json"
+      if (Test-Path $resultsFile) {
+        $json = Get-Content $resultsFile -Raw | ConvertFrom-Json
+        Write-Host "Startup Time: $($json.metrics.startupTimeMs) ms"
+        Write-Host "Passed: $($json.passed)"
+        
+        Write-Host "##vso[task.setvariable variable=startupTime]$($json.metrics.startupTimeMs)"
+        Write-Host "##vso[task.setvariable variable=passed]$($json.passed)"
+      }
+      
+      exit $exitCode
+    displayName: 'Run Performance Test - ${{ parameters.target }}'
+
+  - powershell: |
+      $resultsFile = ".\tests\results\case4-startup-performance-${{ parameters.target }}.json"
+      if (Test-Path $resultsFile) {
+        $json = Get-Content $resultsFile -Raw | ConvertFrom-Json
+        $statusEmoji = if ($json.passed) { [char]::ConvertFromUtf32(0x2705) } else { [char]::ConvertFromUtf32(0x274C) }
+        $status = if ($json.passed) { "$statusEmoji PASSED" } else { "$statusEmoji FAILED" }
+        $headerEmoji = '${{ parameters.emoji }}'
+        
+        $summary = @"
+      ## $headerEmoji Performance Test Results - ${{ parameters.target }}
+      
+      | Metric | Value |
+      |--------|-------|
+      | Startup Time | $($json.metrics.startupTimeMs) ms |
+      | Status | $status |
+      | Target | ${{ parameters.target }} |
+      
+      > ${{ parameters.note }}
+      "@
+        
+        $summaryFile = "$(Agent.TempDirectory)\summary.md"
+        [System.IO.File]::WriteAllText($summaryFile, $summary, [System.Text.Encoding]::UTF8)
+        Write-Host "##vso[task.uploadsummary]$summaryFile"
+      }
+    displayName: 'Generate Summary'
+    condition: always()

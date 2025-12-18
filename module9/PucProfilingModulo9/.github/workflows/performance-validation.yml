@@ -1,0 +1,126 @@
+name: Performance Validation
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'src/problem/**'
+      - 'src/solved1/**'
+      - 'src/solved2/**'
+  push:
+    branches: [main]
+    paths:
+      - 'src/problem/**'
+      - 'src/solved1/**'
+      - 'src/solved2/**'
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  detect-changes:
+    runs-on: self-hosted
+    outputs:
+      targets: ${{ steps.set-targets.outputs.targets }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      
+      - name: Configure Git safe directory
+        shell: powershell
+        run: git config --global --add safe.directory $env:GITHUB_WORKSPACE
+      
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            problem:
+              - 'src/problem/**'
+            solved1:
+              - 'src/solved1/**'
+            solved2:
+              - 'src/solved2/**'
+      
+      - name: Set targets matrix
+        id: set-targets
+        shell: powershell
+        run: |
+          $targets = @()
+          if ('${{ steps.filter.outputs.problem }}' -eq 'true') { $targets += 'problem' }
+          if ('${{ steps.filter.outputs.solved1 }}' -eq 'true') { $targets += 'solved1' }
+          if ('${{ steps.filter.outputs.solved2 }}' -eq 'true') { $targets += 'solved2' }
+          
+          $json = $targets | ConvertTo-Json -Compress
+          if ($targets.Count -eq 1) { $json = "[$json]" }
+          if ($targets.Count -eq 0) { $json = "[]" }
+          
+          echo "targets=$json" >> $env:GITHUB_OUTPUT
+          Write-Host "Targets to test: $json"
+
+  performance-test:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.targets != '[]'
+    runs-on: self-hosted
+    strategy:
+      fail-fast: false
+      matrix:
+        target: ${{ fromJson(needs.detect-changes.outputs.targets) }}
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Performance Test - ${{ matrix.target }}
+        id: perf-test
+        shell: powershell
+        run: |
+          $target = '${{ matrix.target }}'
+          $result = & .\tests\performance\case4-startup-time.ps1 -Target $target -CIMode
+          $exitCode = $LASTEXITCODE
+          
+          $resultsFile = ".\tests\results\case4-startup-performance-$target.json"
+          if (Test-Path $resultsFile) {
+            $json = Get-Content $resultsFile -Raw | ConvertFrom-Json
+            Write-Host "Startup Time: $($json.metrics.startupTimeMs) ms"
+            Write-Host "Passed: $($json.passed)"
+            
+            echo "startup_time=$($json.metrics.startupTimeMs)" >> $env:GITHUB_OUTPUT
+            echo "passed=$($json.passed)" >> $env:GITHUB_OUTPUT
+          }
+          
+          exit $exitCode
+      
+      - name: Performance Summary
+        if: always()
+        shell: powershell
+        run: |
+          $target = '${{ matrix.target }}'
+          $resultsFile = ".\tests\results\case4-startup-performance-$target.json"
+          
+          if (Test-Path $resultsFile) {
+            $json = Get-Content $resultsFile -Raw | ConvertFrom-Json
+            
+            $notes = @{
+              'problem' = "> **Note:** The 'problem' project is expected to have slower startup times as it demonstrates the performance issue."
+              'solved1' = "> **Optimization:** Uses lazy loading to defer data loading until needed."
+              'solved2' = "> **Optimization:** Uses background preloading to load data asynchronously."
+            }
+            
+            $emoji = if ($target -eq 'problem') { ':mag:' } else { ':rocket:' }
+            $status = if ($json.passed) { ':white_check_mark: PASSED' } else { ':x: FAILED' }
+            
+            $summary = @"
+          ## $emoji Performance Test Results - $target
+          
+          | Metric | Value |
+          |--------|-------|
+          | Startup Time | $($json.metrics.startupTimeMs) ms |
+          | Status | $status |
+          | Target | $target |
+          
+          $($notes[$target])
+          "@
+            
+            [System.IO.File]::AppendAllText($env:GITHUB_STEP_SUMMARY, $summary, [System.Text.Encoding]::UTF8)
+          }
