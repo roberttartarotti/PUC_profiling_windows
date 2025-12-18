@@ -1,0 +1,49 @@
+<Window x:Class="StartupPerformance.Problem.SplashWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="ERP System - Carregando"
+        Height="300" Width="500"
+        WindowStyle="None"
+        WindowStartupLocation="CenterScreen"
+        Background="#2C3E50"
+        AllowsTransparency="True"
+        ResizeMode="NoResize">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="60"/>
+        </Grid.RowDefinitions>
+
+        <!-- Logo/Title -->
+        <StackPanel Grid.Row="0" VerticalAlignment="Center" HorizontalAlignment="Center">
+            <TextBlock Text="🏢 ERP System" 
+                       FontSize="48" 
+                       FontWeight="Bold" 
+                       Foreground="White"
+                       HorizontalAlignment="Center"/>
+            <TextBlock Text="Enterprise Resource Planning" 
+                       FontSize="16" 
+                       Foreground="#BDC3C7"
+                       HorizontalAlignment="Center"
+                       Margin="0,10,0,0"/>
+        </StackPanel>
+
+        <!-- Loading Message -->
+        <TextBlock x:Name="StatusText"
+                   Grid.Row="1"
+                   Text="Carregando dados..."
+                   FontSize="14"
+                   Foreground="#ECF0F1"
+                   HorizontalAlignment="Center"
+                   Margin="0,0,0,20"/>
+
+        <!-- Progress Bar -->
+        <ProgressBar Grid.Row="2"
+                     IsIndeterminate="True"
+                     Height="8"
+                     Margin="40,0,40,20"
+                     Foreground="#3498DB"
+                     Background="#34495E"/>
+    </Grid>
+</Window>
