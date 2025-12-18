@@ -1,0 +1,72 @@
+<Window x:Class="UIVirtualization.Problem.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="UI Virtualization - Problem" 
+        Height="450" Width="600"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Title -->
+        <TextBlock Grid.Row="0" 
+                   Text="❌ Seleção de Cliente (SEM Virtualização)" 
+                   FontSize="20" 
+                   FontWeight="Bold" 
+                   Foreground="#E74C3C"
+                   Margin="0,0,0,20"/>
+
+        <!-- Info -->
+        <TextBlock Grid.Row="1" 
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,10">
+            <Run Text="⚠️ PROBLEMA: " FontWeight="Bold" Foreground="#E74C3C"/>
+            <Run Text="ComboBox carrega TODOS os 10.000 clientes na memória visual."/>
+            <LineBreak/>
+            <Run Text="• Tela demora a abrir (~2-5 segundos)"/>
+            <LineBreak/>
+            <Run Text="• Dropdown demora a abrir"/>
+            <LineBreak/>
+            <Run Text="• Alto uso de memória visual"/>
+        </TextBlock>
+
+        <!-- ComboBox Label -->
+        <TextBlock Grid.Row="2" 
+                   Text="Selecione um cliente:" 
+                   FontWeight="Bold"
+                   Margin="0,10,0,5"/>
+
+        <!-- ComboBox SEM Virtualization -->
+        <ComboBox x:Name="ClientesComboBox"
+                  AutomationProperties.AutomationId="ClientesComboBox"
+                  Grid.Row="3"
+                  Height="30"
+                  Margin="0,0,0,20"
+                  DisplayMemberPath="Nome"
+                  SelectedValuePath="Id"/>
+
+        <!-- Selected Info -->
+        <Border Grid.Row="4" 
+                Background="#F8F9FA"
+                BorderBrush="#DEE2E6"
+                BorderThickness="1"
+                Padding="15"
+                CornerRadius="5">
+            <StackPanel>
+                <TextBlock Text="Cliente Selecionado:" 
+                           FontWeight="Bold" 
+                           FontSize="14"
+                           Margin="0,0,0,10"/>
+                <TextBlock x:Name="SelectedClienteText"
+                           Text="Nenhum cliente selecionado"
+                           FontSize="12"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
