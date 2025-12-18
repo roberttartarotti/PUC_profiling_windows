@@ -1,0 +1,129 @@
+<Window
+    x:Class="UIThreadBlocking.WinUI3.Solved.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Padding="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Título -->
+        <TextBlock Grid.Row="0" 
+                   FontSize="24" 
+                   FontWeight="Bold" 
+                   Margin="0,0,0,16">
+            UI Thread Bloqueada - WinUI 3 RESOLVIDO ✅
+        </TextBlock>
+
+        <!-- Descrição da Solução -->
+        <Border Grid.Row="1" 
+                Background="#F0FFF4" 
+                BorderBrush="#C6F6D5" 
+                BorderThickness="2" 
+                CornerRadius="8" 
+                Padding="12"
+                Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock TextWrapping="Wrap" Foreground="#2F855A" FontWeight="SemiBold">
+                    ✅ SOLUÇÃO: async/await + Task.Run
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Foreground="#666666" Margin="0,8,0,0">
+                    Agora você pode interagir livremente enquanto os dados carregam:
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Foreground="#666666" Margin="12,4,0,0">
+                    ✅ Mover a janela
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Foreground="#666666" Margin="12,2,0,0">
+                    ✅ Clicar em "Cancelar" para interromper
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Foreground="#666666" Margin="12,2,0,0">
+                    ✅ Ver progresso em tempo real
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Foreground="#2F855A" FontWeight="SemiBold" Margin="0,8,0,0">
+                    A UI permanece 100% responsiva! 🚀
+                </TextBlock>
+            </StackPanel>
+        </Border>
+
+        <!-- Botões -->
+        <StackPanel Grid.Row="2" 
+                    Orientation="Horizontal" 
+                    Spacing="12"
+                    Margin="0,0,0,16">
+            <Button x:Name="LoadButton" 
+                    Content="Carregar Dados" 
+                    Click="LoadData_Click"
+                    Style="{StaticResource AccentButtonStyle}"
+                    MinWidth="140"/>
+            <Button x:Name="CancelButton" 
+                    Content="Cancelar" 
+                    Click="CancelButton_Click"
+                    IsEnabled="False"
+                    MinWidth="100"/>
+            <Button x:Name="ClearButton" 
+                    Content="Limpar" 
+                    Click="ClearButton_Click"
+                    MinWidth="100"/>
+        </StackPanel>
+
+        <!-- Área de Resultado -->
+        <Border Grid.Row="3" 
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12"
+                Margin="0,0,0,16">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <TextBox x:Name="ResultTextBox" 
+                         TextWrapping="Wrap"
+                         IsReadOnly="True"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         AcceptsReturn="True"/>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Status Bar com ProgressBar -->
+        <Grid Grid.Row="4">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock x:Name="StatusTextBlock" 
+                       Grid.Row="0"
+                       Text="Pronto" 
+                       VerticalAlignment="Center"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+
+            <ProgressRing x:Name="LoadingProgressRing" 
+                          Grid.Row="0"
+                          Grid.Column="1"
+                          IsActive="False"
+                          Width="24"
+                          Height="24"/>
+
+            <ProgressBar x:Name="ProgressBar"
+                        Grid.Row="1"
+                        Grid.ColumnSpan="2"
+                        Margin="0,8,0,0"
+                        Visibility="Collapsed"
+                        Minimum="0"
+                        Maximum="100"
+                        Value="0"/>
+        </Grid>
+    </Grid>
+</Window>

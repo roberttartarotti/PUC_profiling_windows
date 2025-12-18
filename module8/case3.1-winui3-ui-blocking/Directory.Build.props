@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- Disable PRI generation for unpackaged WinUI 3 apps -->
+    <GenerateLibraryLayout>true</GenerateLibraryLayout>
+  </PropertyGroup>
+</Project>
