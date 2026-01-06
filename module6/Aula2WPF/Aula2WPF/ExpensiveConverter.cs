@@ -31,6 +31,18 @@ namespace WpfXamlPerformanceDemo
         {
             if (value == null) return null;
 
+            if (parameter is int iterations)
+            {
+                // Cálculo pesado para simular overhead
+                double result = 0;
+                for (int i = 0; i < iterations; i++)
+                {
+                    result += Math.Sin(i) * Math.Cos(i);
+                }
+
+                return $"{value} (processed: {result:F4})";
+            }
+
             try
             {
                 string stringValue = value.ToString();

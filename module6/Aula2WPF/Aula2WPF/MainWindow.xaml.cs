@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,9 +15,10 @@ using System.Windows.Threading;
 
 namespace WpfXamlPerformanceDemo
 {
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         private ObservableCollection<DataItem> items;
+        private CollectionViewSource itemsViewSource;
         private DispatcherTimer statsTimer;
         private PerformanceCounter cpuCounter;
         private Process currentProcess;
@@ -25,13 +27,79 @@ namespace WpfXamlPerformanceDemo
         private int layoutPassCount = 0;
         private DispatcherTimer stressTimer;
 
+        private string filterText;
+        private bool showInactive;
+        private bool groupItems;
+        private bool isLoading;
+
+        // INotifyPropertyChanged implementation
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
         // Properties para bindings
         public ObservableCollection<DataItem> Items => items;
-        public string FilterText { get; set; }
-        public bool ShowInactive { get; set; }
-        public bool GroupItems { get; set; }
+
+        public string FilterText
+        {
+            get => filterText;
+            set
+            {
+                if (filterText != value)
+                {
+                    filterText = value;
+                    OnPropertyChanged(nameof(FilterText));
+                    ApplyFilterAndGrouping();
+                }
+            }
+        }
+
+        public bool ShowInactive
+        {
+            get => showInactive;
+            set
+            {
+                if (showInactive != value)
+                {
+                    showInactive = value;
+                    OnPropertyChanged(nameof(ShowInactive));
+                    ApplyFilterAndGrouping();
+                }
+            }
+        }
+
+        public bool GroupItems
+        {
+            get => groupItems;
+            set
+            {
+                if (groupItems != value)
+                {
+                    groupItems = value;
+                    OnPropertyChanged(nameof(GroupItems));
+                    ApplyFilterAndGrouping();
+                }
+            }
+        }
+
         public int ItemCount => items?.Count ?? 0;
-        public bool IsLoading { get; set; }
+
+        public bool IsLoading
+        {
+            get => isLoading;
+            set
+            {
+                if (isLoading != value)
+                {
+                    isLoading = value;
+                    OnPropertyChanged(nameof(IsLoading));
+                }
+            }
+        }
+
         public string SourceText { get; set; }
 
         public MainWindow()
@@ -43,6 +111,10 @@ namespace WpfXamlPerformanceDemo
 
             // Inicializar coleção
             items = new ObservableCollection<DataItem>();
+
+            // Configurar CollectionViewSource para filtro e agrupamento
+            itemsViewSource = new CollectionViewSource();
+            itemsViewSource.Source = items;
 
             // Configurar PerformanceCounter
             try
@@ -65,6 +137,40 @@ namespace WpfXamlPerformanceDemo
             // Monitorar binding updates
             PresentationTraceSources.DataBindingSource.Listeners.Add(
                 new BindingTraceListener(this));
+        }
+
+        private void ApplyFilterAndGrouping()
+        {
+            if (itemsViewSource.View == null)
+                return;
+
+            // Aplicar filtro
+            itemsViewSource.View.Filter = (item) =>
+            {
+                if (item is DataItem dataItem)
+                {
+                    // Filtrar por texto
+                    bool matchesFilter = string.IsNullOrEmpty(FilterText) ||
+                                        dataItem.Name.Contains(FilterText, StringComparison.OrdinalIgnoreCase) ||
+                                        dataItem.Description.Contains(FilterText, StringComparison.OrdinalIgnoreCase);
+
+                    // Filtrar por status Inactive
+                    bool matchesInactive = ShowInactive || dataItem.Status != "Inactive";
+
+                    return matchesFilter && matchesInactive;
+                }
+                return true;
+            };
+
+            // Aplicar agrupamento
+            itemsViewSource.View.GroupDescriptions.Clear();
+            if (GroupItems)
+            {
+                itemsViewSource.View.GroupDescriptions.Add(new PropertyGroupDescription("Status"));
+            }
+
+            // Atualizar contagem
+            OnPropertyChanged(nameof(ItemCount));
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -103,6 +209,10 @@ namespace WpfXamlPerformanceDemo
                         items.Add(item);
                     }
                     IsLoading = false;
+                    
+                    // Vincular a view à ListView
+                    ItemsListView.ItemsSource = itemsViewSource.View;
+                    ApplyFilterAndGrouping();
                 });
             });
         }
@@ -205,10 +315,8 @@ namespace WpfXamlPerformanceDemo
         {
             MessageBox.Show(
                 "Para profiling:\n\n" +
-                "1. PIX: Capture frames durante interação\n" +
                 "2. VS Profiler: Analise CPU/GPU usage\n" +
                 "3. PerfView: Capture eventos WPF\n" +
-                "4. WPR: Use o preset 'GeneralProfile'\n\n" +
                 "Problemas a observar:\n" +
                 "- ListView sem virtualization\n" +
                 "- TwoWay bindings cascateando\n" +
@@ -283,6 +391,9 @@ namespace WpfXamlPerformanceDemo
             // Simular atividade pesada
             Dispatcher.BeginInvoke(new Action(() =>
             {
+                SourceText = "Teste";
+                OnPropertyChanged(nameof(SourceText));
+
                 // Adicionar/remover itens
                 if (random.Next(0, 2) == 0 && items.Count > 0)
                 {

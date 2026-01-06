@@ -179,9 +179,9 @@
                     <!-- LISTVIEW SEM VIRTUALIZAÇÃO (PROBLEMA GRAVE!) -->
                     <ListView x:Name="ItemsListView" 
                              Grid.Row="1"
-                             ItemsSource="{Binding Items}"
                              ItemTemplate="{StaticResource HeavyItemTemplate}"
-                             VirtualizingStackPanel.IsVirtualizing="False"
+                             VirtualizingStackPanel.IsVirtualizing="True"
+                              VirtualizingStackPanel.VirtualizationMode="Recycling" 
                              ScrollViewer.VerticalScrollBarVisibility="Visible">
 
                         <ListView.GroupStyle>
@@ -205,7 +205,7 @@
                         <ListView.ItemsPanel>
                             <ItemsPanelTemplate>
                                 <!-- StackPanel em vez de VirtualizingStackPanel -->
-                                <StackPanel Orientation="Vertical"/>
+                                <VirtualizingStackPanel Orientation="Vertical"/>
                             </ItemsPanelTemplate>
                         </ListView.ItemsPanel>
 
@@ -422,9 +422,10 @@
                                             Margin="0,0,0,5"/>
                                     <TextBlock>
                                         <TextBlock.Text>
-                                            <MultiBinding StringFormat="{}{0} {1}">
+                                            <MultiBinding StringFormat="{}{0} {1} {2}">
                                                 <Binding ElementName="FirstName" Path="Text"/>
                                                 <Binding ElementName="LastName" Path="Text"/>
+                                                <Binding ElementName="SourceTextBox" Path="Text"/>
                                             </MultiBinding>
                                         </TextBlock.Text>
                                     </TextBlock>
@@ -442,7 +443,7 @@
                                         <TextBlock.Text>
                                             <Binding ElementName="ValueSlider" 
                                                     Path="Value"
-                                                    Converter="{StaticResource ExpensiveConverter}"/>
+                                                    Converter="{StaticResource ExpensiveConverter}" ConverterParameter="1000000000"/>
                                         </TextBlock.Text>
                                     </TextBlock>
                                 </StackPanel>
