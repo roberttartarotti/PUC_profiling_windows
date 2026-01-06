@@ -1,0 +1,64 @@
+{
+  "case1-memory-pressure": {
+    "problem": {
+      "gcHeapSizeMB": { "max": 200, "description": "Deve consumir <=200MB (código com memory leak)" },
+      "allocationRateMBPerSec": { "max": 50, "description": "Alta taxa de alocação <=50 MB/s" },
+      "gen2Collections": { "max": 20, "description": "Muitas coletas Gen2 <=20" }
+    },
+    "solved": {
+      "gcHeapSizeMB": { "max": 50, "description": "Deve consumir <=50MB com otimização" },
+      "allocationRateMBPerSec": { "max": 5, "description": "Baixa taxa de alocação <=5 MB/s" },
+      "gen2Collections": { "max": 2, "description": "Poucas coletas Gen2 <=2" }
+    }
+  },
+  "case2-locking-contention": {
+    "problem": {
+      "lockContentionCount": { "max": 100, "description": "Alto contention <=100 devido a lock scope largo" },
+      "throughputPerSec": { "max": 100, "description": "Baixo throughput <=100 ops/s" }
+    },
+    "solved": {
+      "lockContentionCount": { "max": 10, "description": "Baixo contention <=10 com lock otimizado" },
+      "throughputPerSec": { "max": 10000, "description": "Alto throughput <=10000 ops/s (sem limite rígido)" }
+    }
+  },
+  "case3-ui-blocking": {
+    "problem": {
+      "uiThreadBlockedMs": { "max": 10000, "description": "UI bloqueada <=10s durante operação" },
+      "uiResponsive": false
+    },
+    "solved": {
+      "uiThreadBlockedMs": { "max": 100, "description": "UI bloqueada <=100ms" },
+      "uiResponsive": true
+    }
+  },
+  "case4-startup-performance": {
+    "problem": {
+      "startupTimeMs": { "max": 3000, "description": "Startup <=10s com CSV grande" }
+    },
+    "solved1": {
+      "startupTimeMs": { "max": 3000, "description": "Startup <=500ms com lazy loading" }
+    },
+    "solved2": {
+      "startupTimeMs": { "max": 3000, "description": "Startup <=500ms com preload" }
+    }
+  },
+  "case5-benchmark": {
+    "modulo": {
+      "meanNs": { "max": 100, "description": "Média <=100ns para operação módulo" }
+    },
+    "remainder": {
+      "meanNs": { "max": 150, "description": "Média <=150ns para operação remainder" }
+    },
+    "truncate": {
+      "meanNs": { "max": 120, "description": "Média <=120ns para operação truncate" }
+    }
+  },
+  "case6-ui-virtualization": {
+    "problem": {
+      "dropdownOpenTimeMs": { "max": 10000, "description": "Dropdown open <=10s sem virtualização (10k itens)" }
+    },
+    "solved": {
+      "dropdownOpenTimeMs": { "max": 500, "description": "Dropdown open <=500ms com virtualização" }
+    }
+  }
+}

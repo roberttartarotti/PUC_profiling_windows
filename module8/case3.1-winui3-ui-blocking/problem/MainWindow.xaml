@@ -1,0 +1,109 @@
+<Window
+    x:Class="UIThreadBlocking.WinUI3.Problem.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Padding="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Título -->
+        <TextBlock Grid.Row="0" 
+                   FontSize="24" 
+                   FontWeight="Bold" 
+                   Margin="0,0,0,16">
+            UI Thread Bloqueada - WinUI 3 PROBLEMA
+        </TextBlock>
+
+        <!-- Descrição do Problema -->
+        <Border Grid.Row="1" 
+                Background="#FFF4F4" 
+                BorderBrush="#FFE0E0" 
+                BorderThickness="2" 
+                CornerRadius="8" 
+                Padding="12"
+                Margin="0,0,0,16">
+            <StackPanel>
+                <TextBlock TextWrapping="Wrap" Foreground="#D13438" FontWeight="SemiBold">
+                    ⚠️ PROBLEMA: UI Thread Bloqueada
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Foreground="#666666" Margin="0,8,0,0">
+                    Clique em "Carregar Dados" e tente:
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Foreground="#666666" Margin="12,4,0,0">
+                    • Mover a janela
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Foreground="#666666" Margin="12,2,0,0">
+                    • Clicar no botão "Limpar"
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Foreground="#666666" Margin="12,2,0,0">
+                    • Interagir com qualquer controle
+                </TextBlock>
+                <TextBlock TextWrapping="Wrap" Foreground="#D13438" FontWeight="SemiBold" Margin="0,8,0,0">
+                    A UI vai congelar completamente! 🧊
+                </TextBlock>
+            </StackPanel>
+        </Border>
+
+        <!-- Botões -->
+        <StackPanel Grid.Row="2" 
+                    Orientation="Horizontal" 
+                    Spacing="12"
+                    Margin="0,0,0,16">
+            <Button x:Name="LoadButton" 
+                    Content="Carregar Dados" 
+                    Click="LoadData_Click"
+                    Style="{StaticResource AccentButtonStyle}"
+                    MinWidth="140"/>
+            <Button x:Name="ClearButton" 
+                    Content="Limpar" 
+                    Click="ClearButton_Click"
+                    MinWidth="100"/>
+        </StackPanel>
+
+        <!-- Área de Resultado -->
+        <Border Grid.Row="3" 
+                Background="{ThemeResource LayerFillColorDefaultBrush}"
+                BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                BorderThickness="1"
+                CornerRadius="8"
+                Padding="12"
+                Margin="0,0,0,16">
+            <ScrollViewer VerticalScrollBarVisibility="Auto">
+                <TextBox x:Name="ResultTextBox" 
+                         TextWrapping="Wrap"
+                         IsReadOnly="True"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         AcceptsReturn="True"/>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Status Bar -->
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <TextBlock x:Name="StatusTextBlock" 
+                       Text="Pronto" 
+                       VerticalAlignment="Center"
+                       Foreground="{ThemeResource TextFillColorSecondaryBrush}"/>
+
+            <ProgressRing x:Name="LoadingProgressRing" 
+                          Grid.Column="1"
+                          IsActive="False"
+                          Width="24"
+                          Height="24"/>
+        </Grid>
+    </Grid>
+</Window>

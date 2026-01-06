@@ -1,0 +1,102 @@
+trigger:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - src/problem/**
+      - src/solved1/**
+      - src/solved2/**
+
+pr:
+  branches:
+    include:
+      - main
+  paths:
+    include:
+      - src/problem/**
+      - src/solved1/**
+      - src/solved2/**
+
+pool:
+  name: 'Self-hosted Pool'
+
+stages:
+  - stage: DetectChanges
+    displayName: 'Detect Changes'
+    jobs:
+      - job: DetectChanges
+        displayName: 'Detect Changed Paths'
+        steps:
+          - checkout: self
+            fetchDepth: 0
+
+          - powershell: |
+              git config --global --add safe.directory $(Build.SourcesDirectory)
+            displayName: 'Configure Git safe directory'
+
+          - powershell: |
+              $changedFiles = git diff --name-only HEAD~1 HEAD 2>$null
+              if ($LASTEXITCODE -ne 0) {
+                # For PRs, compare with target branch
+                $changedFiles = git diff --name-only origin/main...HEAD
+              }
+              
+              Write-Host "Changed files:"
+              $changedFiles | ForEach-Object { Write-Host "  $_" }
+              
+              $targets = @()
+              if ($changedFiles -match '^src/problem/') { $targets += 'problem' }
+              if ($changedFiles -match '^src/solved1/') { $targets += 'solved1' }
+              if ($changedFiles -match '^src/solved2/') { $targets += 'solved2' }
+              
+              $json = $targets | ConvertTo-Json -Compress
+              if ($targets.Count -eq 1) { $json = "[$json]" }
+              if ($targets.Count -eq 0) { $json = "[]" }
+              
+              Write-Host "Targets to test: $json"
+              Write-Host "##vso[task.setvariable variable=targets;isOutput=true]$json"
+            name: detect
+            displayName: 'Detect changed paths'
+
+  - stage: TestProblem
+    displayName: 'Test Problem'
+    dependsOn: DetectChanges
+    condition: and(succeeded(), contains(dependencies.DetectChanges.outputs['DetectChanges.detect.targets'], 'problem'))
+    jobs:
+      - job: PerformanceTest
+        displayName: 'Performance Test - problem'
+        steps:
+          - template: templates/performance-test.yml
+            parameters:
+              target: 'problem'
+              emoji: '🔍'
+              note: "**Note:** The 'problem' project is expected to have slower startup times as it demonstrates the performance issue."
+
+  - stage: TestSolved1
+    displayName: 'Test Solved1'
+    dependsOn: DetectChanges
+    condition: and(succeeded(), contains(dependencies.DetectChanges.outputs['DetectChanges.detect.targets'], 'solved1'))
+    jobs:
+      - job: PerformanceTest
+        displayName: 'Performance Test - solved1'
+        steps:
+          - template: templates/performance-test.yml
+            parameters:
+              target: 'solved1'
+              emoji: '🚀'
+              note: '**Optimization:** Uses lazy loading to defer data loading until needed.'
+
+  - stage: TestSolved2
+    displayName: 'Test Solved2'
+    dependsOn: DetectChanges
+    condition: and(succeeded(), contains(dependencies.DetectChanges.outputs['DetectChanges.detect.targets'], 'solved2'))
+    jobs:
+      - job: PerformanceTest
+        displayName: 'Performance Test - solved2'
+        steps:
+          - template: templates/performance-test.yml
+            parameters:
+              target: 'solved2'
+              emoji: '🚀'
+              note: '**Optimization:** Uses background preloading to load data asynchronously.'

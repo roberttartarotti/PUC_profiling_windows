@@ -1,0 +1,59 @@
+<Window x:Class="UIThreadBlocking.Solved.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Caso 3: UI Thread Bloqueada - RESOLVIDO" Height="500" Width="700"
+        WindowStartupLocation="CenterScreen">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Título -->
+        <TextBlock Grid.Row="0" FontSize="20" FontWeight="Bold" Margin="0,0,0,10">
+            UI Thread Bloqueada - Versão Resolvida
+        </TextBlock>
+
+        <!-- Descrição -->
+        <TextBlock Grid.Row="1" TextWrapping="Wrap" Margin="0,0,0,10" Foreground="Green">
+            ✅ RESOLVIDO: Clique em "Carregar Dados" e tente interagir com a janela.
+            Observe que a UI permanece TOTALMENTE RESPONSIVA durante o carregamento!
+            Você pode mover a janela, clicar em outros botões, até cancelar a operação.
+        </TextBlock>
+
+        <!-- Botões -->
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,0,0,10">
+            <Button x:Name="LoadButton" Content="Carregar Dados" Width="120" Height="30" 
+                    Click="LoadData_Click" Margin="0,0,10,0"/>
+            <Button x:Name="CancelButton" Content="Cancelar" Width="80" Height="30" 
+                    Click="CancelButton_Click" Margin="0,0,10,0"
+                    Visibility="Collapsed" Background="OrangeRed" Foreground="White"/>
+            <Button x:Name="ClearButton" Content="Limpar" Width="80" Height="30" 
+                    Click="ClearButton_Click"/>
+        </StackPanel>
+
+        <!-- Resultado -->
+        <TextBox x:Name="ResultTextBox" Grid.Row="3" 
+                 VerticalScrollBarVisibility="Auto"
+                 IsReadOnly="True" 
+                 Background="#F5F5F5"
+                 Margin="0,0,0,10"/>
+
+        <!-- Status -->
+        <Grid Grid.Row="4">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
+            </Grid.ColumnDefinitions>
+
+            <Label x:Name="StatusLabel" Content="Pronto" Grid.Column="0"/>
+            <ProgressBar x:Name="ProgressBar" Grid.Column="1" 
+                        Width="200" Height="20" 
+                        Minimum="0" Maximum="100"
+                        Visibility="Collapsed"/>
+        </Grid>
+    </Grid>
+</Window>
